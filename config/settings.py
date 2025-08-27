@@ -18,8 +18,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # Don't run with debug turned on in production!
 SECRET_KEY = env.str("SECRET_KEY")
 DEBUG = env.bool("DEBUG", default=False)
-ALLOWED_HOSTS = env.list("ALLOWED_DOMAINS", default=["api.ifoda-shop.uz"])
-CORS_ALLOWED_ORIGINS = env.list("ALLOWED_DOMAINS", default=[])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["api.ifoda-shop.uz"])
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS", default=["https://api.ifoda-shop.uz"]
+)
 
 # Application definition
 
@@ -64,6 +66,15 @@ AUTH_USER_MODEL = "users.User"
 PHONENUMBER_DEFAULT_REGION = "UZ"  # This configuration is required since backend must only accept phone numbers of Uzbekistan.
 PHONENUMBER_DB_FORMAT = "E164"  # Forces phone number inputs such as "998901234567", "+998 90 123 45 67", "00998901234567" to be stored in database as +998901234567.
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.2/howto/static-files/
+
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 # Simple JWT (Authorization) configurations.
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3),  # Access token will last 3 days.
@@ -93,18 +104,18 @@ UNFOLD = {
     "SITE_TITLE": "Ifoda Backend Admin Panel",  # This displays in login page as title.
     "SITE_HEADER": "Admin Panel",  # This is sidebar's title.
     "SITE_SUBHEADER": "Ifoda Backend Admin Panel.",  # This is sidebar's subtitle.
-    "SITE_ICON": "https://i.postimg.cc/yDPjYkzB/ifoda-favicon.png",  # This is sidebar's icon.
+    "SITE_ICON": f"{STATIC_URL}unfold/images/ifoda-favicon.png",  # This is sidebar's icon.
     "SITE_FAVICONS": [
         {
             "rel": "icon",
             "sizes": "32x32",
             "type": "image/svg+xml",
-            "href": "https://i.postimg.cc/yDPjYkzB/ifoda-favicon.png",
+            "href": f"{STATIC_URL}unfold/images/ifoda-favicon.png",
         },
     ],  # Admin panel's favicon.
     "THEME": "light",  # Force theme: "dark" or "light". Will disable theme switcher
     "LOGIN": {
-        "image": "https://i.postimg.cc/xXYg2Lht/ifoda-vertical.jpg"
+        "image": f"{STATIC_URL}unfold/images/ifoda-vertical.jpg"
     },  # This displays in login page as banner
     "BORDER_RADIUS": "8px",  # Border corner radius for all admin panel components.
     "COLORS": {
@@ -187,16 +198,6 @@ TIME_ZONE = "Asia/Tashkent"
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
