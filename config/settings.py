@@ -19,8 +19,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG")
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_DOMAINS").split(",")
-CORS_ALLOWED_ORIGINS = os.environ.get("ALLOWED_DOMAINS").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_DOMAINS", [])
+CORS_ALLOWED_ORIGINS = os.environ.get("ALLOWED_DOMAINS", [])
 
 # Application definition
 
