@@ -104,18 +104,18 @@ UNFOLD = {
     "SITE_TITLE": "Ifoda Backend Admin Panel",  # This displays in login page as title.
     "SITE_HEADER": "Admin Panel",  # This is sidebar's title.
     "SITE_SUBHEADER": "Ifoda Backend Admin Panel.",  # This is sidebar's subtitle.
-    "SITE_ICON": f"{STATIC_URL}unfold/images/ifoda-favicon.png",  # This is sidebar's icon.
+    "SITE_ICON": f"{STATIC_URL}unfold/images/ifoda_favicon.png",  # This is sidebar's icon.
     "SITE_FAVICONS": [
         {
             "rel": "icon",
             "sizes": "32x32",
             "type": "image/svg+xml",
-            "href": f"{STATIC_URL}unfold/images/ifoda-favicon.png",
+            "href": f"{STATIC_URL}unfold/images/ifoda_favicon.png",
         },
     ],  # Admin panel's favicon.
     "THEME": "light",  # Force theme: "dark" or "light". Will disable theme switcher
     "LOGIN": {
-        "image": f"{STATIC_URL}unfold/images/ifoda-vertical.jpg"
+        "image": f"{STATIC_URL}unfold/images/ifoda_vertical.png"
     },  # This displays in login page as banner
     "BORDER_RADIUS": "8px",  # Border corner radius for all admin panel components.
     "COLORS": {
