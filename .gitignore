@@ -1,8 +1,8 @@
 /.vscode/
 /.venv/
 /venv/
-/static/
 /media/
+/static/
 __pycache__/
 db.sqlite3
 .env
