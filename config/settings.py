@@ -1,26 +1,25 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-from dotenv import load_dotenv
+import environ
 
 # Load environment variables from .env file
-load_dotenv()
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = env.list("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG")
+DEBUG = env.list("DEBUG", default=False)
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_DOMAINS", [])
-CORS_ALLOWED_ORIGINS = os.environ.get("ALLOWED_DOMAINS", [])
+ALLOWED_HOSTS = env.list("ALLOWED_DOMAINS", default=["api.ifoda-shop.uz"])
+CORS_ALLOWED_ORIGINS = env.list("ALLOWED_DOMAINS", default=[])
 
 # Application definition
 
