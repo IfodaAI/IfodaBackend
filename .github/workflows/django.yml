@@ -7,25 +7,55 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build_and_deploy:
+  test:
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: Upload repository
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Setup python
+    - name: Setup Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.13'
 
-    - name: Install packages
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Connect to the server and deploy
-      if: success()
+    - name: Run migrations
+      run: |
+        python manage.py makemigrations --check --dry-run
+
+    - name: Run tests
+      run: |
+        python manage.py test --noinput
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.13'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Collect static files
+      run: |
+        python manage.py collectstatic --noinput
+
+    - name: Deploy to server
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SERVER_IP }}
@@ -37,9 +67,10 @@ jobs:
           git reset --hard origin/main
           source .venv/bin/activate
           pip install -r requirements.txt
-          python3 manage.py makemigrations
-          python3 manage.py migrate
+          python manage.py makemigrations --noinput
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
           sudo supervisorctl reread
           sudo supervisorctl update
           sudo supervisorctl restart IfodaBackend
-          sudo systemctl restart nginx
+          sudo systemctl reload nginx  # Use reload instead of restart
