@@ -71,7 +71,7 @@ PHONENUMBER_DB_FORMAT = "E164"  # Forces phone number inputs such as "9989012345
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static_collected")
-STATICFILES_DIRS = [BASE_DIR / "static"] 
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -139,7 +139,6 @@ UNFOLD = {
         "command_search": True,  # Replace the sidebar search with the command search
     },
 }
-
 
 TEMPLATES = [
     {
