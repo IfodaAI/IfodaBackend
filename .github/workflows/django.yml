@@ -20,7 +20,7 @@ jobs:
           python-version: "3.13"
 
       - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.14
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
