@@ -1,53 +1,47 @@
-name: CI/CD Pipeline
+name: Deploy to server
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    branches:
+      - "main"
 
 jobs:
-  build_and_deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.13"
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
       - name: Deploy to server
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          debug: true
-          script: |
-            set -e
-            cd /home/boshadmin/IfodaBackend
-            git fetch --all
-            git checkout main
-            git reset --hard origin/main
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'    
+          set -e
+          cd /home/boshadmin/IfodaBackend
+          git pull origin main
 
-            if [ -f .venv/bin/activate ]; then
-              source .venv/bin/activate
-            else
-              python3 -m venv .venv
-              source .venv/bin/activate
-            fi
+          if [ -f .venv/bin/activate ]; then
+            source .venv/bin/activate
+          else
+            python3 -m venv .venv
+            source .venv/bin/activate
+          fi
 
-            python3 -m pip install --upgrade pip
-            pip install -r requirements.txt
+          python3 -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-            python3 manage.py makemigrations --noinput
-            python3 manage.py migrate --noinput
-            python3 manage.py collectstatic --noinput
+          python3 manage.py makemigrations --noinput
+          python3 manage.py migrate --noinput
+          python3 manage.py collectstatic --noinput
 
-            sudo supervisorctl reread
-            sudo supervisorctl update
-            sudo supervisorctl restart IfodaBackend
-            sudo systemctl restart nginx
+          sudo supervisorctl reread
+          sudo supervisorctl update
+          sudo supervisorctl restart IfodaBackend
+          sudo systemctl restart nginx
