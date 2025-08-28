@@ -20,11 +20,12 @@ jobs:
           python-version: "3.13"
 
       - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.8
+        uses: appleboy/ssh-action@v0.1.14
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          debug: true
           script: |
             set -e
             cd /home/boshadmin/IfodaBackend
