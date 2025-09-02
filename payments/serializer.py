@@ -1,13 +1,12 @@
-from rest_framework.serializers import ModelSerializer
+from utils.serializers import BaseModelSerializer
 from .models import Payment, Delivery
 
 
-class PaymentSerializer(ModelSerializer):
-    class Meta:
+class PaymentSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = Payment
-        fields = "__all__"
 
-class DeliverySerializer(ModelSerializer):
-    class Meta:
+
+class DeliverySerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = Delivery
-        fields = "__all__"

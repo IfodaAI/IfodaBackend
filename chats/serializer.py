@@ -1,13 +1,12 @@
-from rest_framework.serializers import ModelSerializer
+from utils.serializers import BaseModelSerializer
 from .models import Topic, Message
 
-class TopicSerializer(ModelSerializer):
-    class Meta:
+
+class TopicSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = Topic
-        fields = "__all__"
 
 
-class MessageSerializer(ModelSerializer):
-    class Meta:
+class MessageSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = Message
-        fields = "__all__"

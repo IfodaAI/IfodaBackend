@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from utils.serializers import BaseModelSerializer
 from .models import (
     Disease,
     DiseaseCategory,
@@ -10,43 +10,36 @@ from .models import (
 )
 
 
-class DiseaseSerializer(ModelSerializer):
-    class Meta:
+class DiseaseSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = Disease
-        fields = "__all__"
 
 
-class DiseaseCategorySerializer(ModelSerializer):
-    class Meta:
+class DiseaseCategorySerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = DiseaseCategory
-        fields = "__all__"
 
 
-class ProductCategorySerializer(ModelSerializer):
-    class Meta:
+class ProductCategorySerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = ProductCategory
-        fields = "__all__"
 
 
-class ProductSubcategorySerializer(ModelSerializer):
-    class Meta:
+class ProductSubcategorySerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = ProductSubcategory
-        fields = "__all__"
 
 
-class ProductSerializer(ModelSerializer):
-    class Meta:
+class ProductSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = Product
-        fields = "__all__"
 
 
-class ProductSKUSerializer(ModelSerializer):
-    class Meta:
+class ProductSKUSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = ProductSKU
-        fields = "__all__"
 
 
-class ProductImageSerializer(ModelSerializer):
-    class Meta:
+class ProductImageSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = ProductImage
-        fields = "__all__"

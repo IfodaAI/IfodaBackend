@@ -15,6 +15,7 @@ class BaseModel(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        editable=False,
         related_name="created_%(class)s_set",
     )
     updated_by = models.ForeignKey(
@@ -22,11 +23,12 @@ class BaseModel(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        editable=False,
         related_name="updated_%(class)s_set",
     )
-    created_date = models.DateTimeField(auto_now_add=True)
-    updated_date = models.DateTimeField(auto_now=True)
-    state = models.BooleanField(default=True)
+    created_date = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_date = models.DateTimeField(auto_now=True, editable=False)
+    state = models.BooleanField(default=True, editable=False)
 
     # Adding this will prevent django from including to database.
     class Meta:

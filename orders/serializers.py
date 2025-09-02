@@ -1,15 +1,12 @@
-from rest_framework.serializers import ModelSerializer
-
+from utils.serializers import BaseModelSerializer
 from .models import Order, OrderItem
 
 
-class OrderSerializer(ModelSerializer):
-    class Meta:
+class OrderSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = Order
-        fields = "__all__"
 
 
-class OrderItemSerializer(ModelSerializer):
-    class Meta:
+class OrderItemSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
         model = OrderItem
-        fields = "__all__"
