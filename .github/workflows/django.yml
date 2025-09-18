@@ -22,9 +22,13 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'    
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           set -e
           cd /home/boshadmin/IfodaBackend
+          
+          # Git xavfsizlik uchun safe.directory ruxsatini qo‘shish
+          git config --global --add safe.directory /home/boshadmin/IfodaBackend
+          
           git pull origin main
 
           if [ -f .venv/bin/activate ]; then
@@ -45,3 +49,4 @@ jobs:
           sudo supervisorctl update
           sudo supervisorctl restart IfodaBackend
           sudo systemctl restart nginx
+EOF
