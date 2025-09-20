@@ -105,8 +105,8 @@ class ProductSKU(BaseModel):
 
 
 class ProductImage(BaseModel):
-    productSKU = models.ForeignKey(
-        ProductSKU,
+    product = models.ForeignKey(
+        Product,
         models.SET_NULL,
         blank=True,
         null=True,
@@ -115,4 +115,4 @@ class ProductImage(BaseModel):
     image = models.ImageField(upload_to="product_images/")
 
     def __str__(self):
-        return f"{self.productSKU}'s image"
+        return f"{self.product}'s image"
