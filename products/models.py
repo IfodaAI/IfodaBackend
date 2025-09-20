@@ -1,6 +1,7 @@
 from django.db import models
 from utils.models import BaseModel
-
+from imagekit.models import ProcessedImageField
+from imagekit.processors import ResizeToFill
 
 class DiseaseCategory(BaseModel):
     title = models.CharField(max_length=255)
@@ -73,6 +74,13 @@ class Product(BaseModel):
         blank=True,
         related_name="products",
     )
+    image_thumbnail = ProcessedImageField(upload_to='avatars',
+                                        # processors=[ResizeToFill(100, 50)],
+                                        format='JPEG',
+                                        options={'quality': 60},
+                                        blank=True,
+                                        null=True
+                                        )
 
     def __str__(self):
         return self.name

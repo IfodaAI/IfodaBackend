@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "django_filters",
     "corsheaders",
+    "imagekit",
     # Local apps
     "users",
     "products",
