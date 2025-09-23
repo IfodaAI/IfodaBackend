@@ -29,7 +29,6 @@ class ProductSubcategorySerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductSubcategory
 
-
 class ProductSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Product
