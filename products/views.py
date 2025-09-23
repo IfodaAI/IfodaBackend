@@ -39,7 +39,7 @@ class ProductSubcategoryViewSet(ModelViewSet):
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    filterset_fields=["category"]
+    filterset_fields=["name","category"]
 
 class ProductSKUViewSet(ModelViewSet):
     queryset = ProductSKU.objects.all()

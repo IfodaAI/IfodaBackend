@@ -49,7 +49,6 @@ class ProductSKUSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductSKU
 
-
 class ProductImageSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductImage
