@@ -8,7 +8,7 @@ from .models import (
     ProductSKU,
     ProductSubcategory,
 )
-
+from django.http import HttpRequest
 
 class DiseaseSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
@@ -33,7 +33,17 @@ class ProductSubcategorySerializer(BaseModelSerializer):
 class ProductSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Product
-
+    
+    def __init__(self, *args, **kwargs):
+        super(ProductSerializer, self).__init__(*args, **kwargs)
+        request: HttpRequest = self.context.get("request")
+        if request and request.method == "GET":
+            product_skus = request.GET.get("product_skus")
+            if product_skus == "true":
+                self.fields["product_skus"] = ProductSKUSerializer(context=self.context)
+            product_images = request.GET.get("product_images")
+            if product_images == "true":
+                self.fields["product_images"] = ProductImageSerializer(context=self.context)
 
 class ProductSKUSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
