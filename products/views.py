@@ -39,7 +39,26 @@ class ProductSubcategoryViewSet(ModelViewSet):
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    filterset_fields=["name","category"]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        name=request.GET.get("name")
+        if name:
+            queryset=queryset.filter(name__cointains=name)
+        category=request.GET.get("category")
+        if category:
+            queryset=queryset.filter(category__category__id=category)
+        subcategory=request.GET.get("subcategory")
+        if subcategory:
+            queryset=queryset.filter(category__id=subcategory)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 class ProductSKUViewSet(ModelViewSet):
     queryset = ProductSKU.objects.all()

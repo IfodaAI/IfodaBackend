@@ -85,7 +85,6 @@ class Product(BaseModel):
     def __str__(self):
         return self.name
 
-
 class ProductSKU(BaseModel):
     UNIT_CHOICES = [
         ("ml", "Milliliter"),
