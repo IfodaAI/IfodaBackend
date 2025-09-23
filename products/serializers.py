@@ -40,10 +40,10 @@ class ProductSerializer(BaseModelSerializer):
         if request and request.method == "GET":
             product_skus = request.GET.get("product_skus")
             if product_skus == "true":
-                self.fields["product_skus"] = ProductSKUSerializer(context=self.context)
+                self.fields["product_skus"] = ProductSKUSerializer(context=self.context,many=True)
             product_images = request.GET.get("product_images")
             if product_images == "true":
-                self.fields["product_images"] = ProductImageSerializer(context=self.context)
+                self.fields["product_images"] = ProductImageSerializer(context=self.context,many=True)
 
 class ProductSKUSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
