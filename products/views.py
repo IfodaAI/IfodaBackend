@@ -44,7 +44,7 @@ class ProductViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         name=request.GET.get("name")
         if name:
-            queryset=queryset.filter(name__cointains=name)
+            queryset=queryset.filter(name__contains=name)
         category=request.GET.get("category")
         if category:
             queryset=queryset.filter(category__category__id=category)
