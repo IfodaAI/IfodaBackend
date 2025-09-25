@@ -42,7 +42,7 @@ class ProductSerializer(BaseModelSerializer):
                 self.fields["product_images"] = ProductImageSerializer(context=self.context,many=True)
             category = request.GET.get("category")
             if category == "true":
-                self.fields["category"] = ProductSubcategory(context=self.context)
+                self.fields["category"] = ProductSubcategorySerializer(context=self.context)
 
 class ProductSKUSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
