@@ -14,16 +14,13 @@ class DiseaseSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Disease
 
-
 class DiseaseCategorySerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = DiseaseCategory
 
-
 class ProductCategorySerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductCategory
-
 
 class ProductSubcategorySerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
@@ -43,6 +40,9 @@ class ProductSerializer(BaseModelSerializer):
             product_images = request.GET.get("product_images")
             if product_images == "true":
                 self.fields["product_images"] = ProductImageSerializer(context=self.context,many=True)
+            category = request.GET.get("category")
+            if category == "true":
+                self.fields["category"] = ProductSubcategory(context=self.context)
 
 class ProductSKUSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
