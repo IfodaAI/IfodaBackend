@@ -24,7 +24,7 @@ class TelegramUserViewSet(ModelViewSet):
         if not telegram_id:
             raise ValidationError({"telegram_id": "Bu maydon majburiy."})
         queryset = self.filter_queryset(self.get_queryset())
-        instance=queryset.filter(telegram_id=telegram_id)
+        instance=queryset.filter(telegram_id=telegram_id)#TEST
         if not instance:
             return Response({})
         serializer = self.get_serializer(instance)
