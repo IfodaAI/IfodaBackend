@@ -39,16 +39,15 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
 
 class TelegramUser(BaseModel):
     telegram_id = models.BigIntegerField(unique=True)
-    username = models.CharField(max_length=32, blank=True, null=True)
+    username = models.CharField(max_length=32, blank=True, null=True,unique=True)
     first_name = models.CharField(max_length=64, blank=True, null=True)
     last_name = models.CharField(max_length=64, blank=True, null=True)
     region = models.CharField(max_length=50, blank=True, null=True)
     district = models.CharField(max_length=50, blank=True, null=True)
-    phone_number = PhoneNumberField(unique=True)
+    phone_number = PhoneNumberField(unique=True, blank=True, null=True)
 
     def __str__(self):
         return f"{self.username}"
-
 
 class Branch(BaseModel):
     brainch_id = models.BigIntegerField(
