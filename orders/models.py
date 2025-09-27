@@ -2,7 +2,7 @@ from django.db import models
 
 from phonenumber_field.modelfields import PhoneNumberField
 
-from users.models import TelegramUser, Branch
+from users.models import User, Branch
 from products.models import ProductSKU
 from utils.models import BaseModel
 
@@ -31,7 +31,7 @@ class Order(BaseModel):
     delivery_latitude = models.CharField(max_length=50)
     delivery_longitude = models.CharField(max_length=50)
     user = models.ForeignKey(
-        TelegramUser,
+        User,
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
