@@ -1,4 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import AllowAny
 
 from .models import User, TelegramUser, Branch
 from .serializers import UserSerializer, TelegramUserSerializer, BranchSerializer
@@ -10,6 +11,7 @@ class UserViewSet(ModelViewSet):
 class TelegramUserViewSet(ModelViewSet):
     queryset = TelegramUser.objects.all()
     serializer_class = TelegramUserSerializer
+    permission_classes=[AllowAny]
     filterset_fields=["telegram_id"]
 
 class BranchViewSet(ModelViewSet):
