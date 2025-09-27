@@ -10,6 +10,7 @@ class UserViewSet(ModelViewSet):
 class TelegramUserViewSet(ModelViewSet):
     queryset = TelegramUser.objects.all()
     serializer_class = TelegramUserSerializer
+    filterset_fields=["telegram_id"]
 
 class BranchViewSet(ModelViewSet):
     queryset = Branch.objects.all()
