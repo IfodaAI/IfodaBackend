@@ -12,7 +12,7 @@ class TelegramUserViewSet(ModelViewSet):
     queryset = TelegramUser.objects.all()
     serializer_class = TelegramUserSerializer
     permission_classes=[AllowAny]
-    pagination_class=[]
+    pagination_class=None
     filterset_fields=["telegram_id"]
 
 class BranchViewSet(ModelViewSet):
