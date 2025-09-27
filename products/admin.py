@@ -59,3 +59,5 @@ class ProductCategoryAdminClass(ModelAdmin):
 @admin.register(ProductSubcategory)
 class ProductSubcategoryAdminClass(ModelAdmin):
     list_display = ["id", "title", "slug", "category"]
+
+admin.site.register(ProductSKU)

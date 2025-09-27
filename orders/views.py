@@ -1,5 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
+from django.http import HttpRequest
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework import status
 
+from products.models import ProductSKU
 from .models import Order, OrderItem
 from .serializers import OrderSerializer, OrderItemSerializer
 from .permissions import OrderPermission
@@ -9,7 +14,35 @@ class OrderViewSet(ModelViewSet):
     permission_classes = [OrderPermission]
     serializer_class = OrderSerializer
 
+    def create(self, request:HttpRequest|Request, *args, **kwargs):
+        # data split
+        items=request.data.pop("items")
+        order=request.data.pop("order")
+
+        # order create
+        total_price=0
+        order["user"]=request.user.id
+        serializer = self.get_serializer(data=order)
+        serializer.is_valid(raise_exception=True)
+        order=self.perform_create(serializer)
+
+        # item create
+        for item in items:
+            item["product"]=ProductSKU.objects.get(id=item["product"])
+            order_item=OrderItem(order=order,**item)
+            order_item.save()
+            print(order_item.product)
+            total_price+=order_item.price
+        
+        # total_price change
+        order.total_price=total_price
+        order.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
+    def perform_create(self, serializer):
+        return serializer.save()
+
     def get_queryset(self):
         user = self.request.user
 

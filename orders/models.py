@@ -17,17 +17,17 @@ class Order(BaseModel):
     ]
     DELIVERY_METHOD_CHOICES = [("DELIVERY", "Delivery"), ("PICK_UP", "Pick Up")]
 
-    total_price = models.FloatField()
+    total_price = models.FloatField(blank=True,null=True)
     status = models.CharField(choices=STATUS_CHOICES, default="PENDING")
     branch = models.ForeignKey(
         Branch, on_delete=models.SET_NULL, blank=True, null=True, related_name="orders"
     )
-    shipping_address = models.CharField(max_length=50)
-    phone_number = PhoneNumberField(unique=True)
+    shipping_address = models.CharField(max_length=50, blank=True, null=True)
+    phone_number = PhoneNumberField(blank=True, null=True)
     delivery_method = models.CharField(
         choices=DELIVERY_METHOD_CHOICES, default="DELIVERY"
     )
-    delivery_price = models.FloatField()
+    delivery_price = models.FloatField(default=0)
     delivery_latitude = models.CharField(max_length=50)
     delivery_longitude = models.CharField(max_length=50)
     user = models.ForeignKey(
@@ -54,6 +54,7 @@ class OrderItem(BaseModel):
 
     def save(self):
         self.price = self.product.price * self.quantity
+        print("\n\n\nin model",self.price)
         return super().save()
 
     def __str__(self):

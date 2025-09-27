@@ -105,7 +105,7 @@ class ProductSKU(BaseModel):
     )
 
     def __str__(self):
-        return f"{self.product} - {self.unit}"
+        return f"{self.id} - {self.product}"
     
     class Meta:
         verbose_name_plural = "Product SKUs"
