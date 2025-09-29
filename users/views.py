@@ -9,6 +9,7 @@ from .permissions import PostAndCheckUserOnly
 
 from .models import User, TelegramUser, Branch
 from .serializers import UserSerializer, TelegramUserSerializer, BranchSerializer, UserRegisterSerializer
+from utils.utils import get_distance_from_lat_lon_in_km
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
@@ -46,3 +47,33 @@ class TelegramUserViewSet(ModelViewSet):
 class BranchViewSet(ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+
+    @action(detail=False, methods=["get"])
+    def get_nearest_branches(self, request: HttpRequest | Request):
+        try:
+            user_lat = float(request.GET.get("latitude"))
+            user_lon = float(request.GET.get("longitude"))
+        except (TypeError, ValueError):
+            return Response(
+                {"error": "latitude va longitude query param sifatida yuborilishi kerak"},
+                status=400,
+            )
+
+        branches = []
+        for branch in Branch.objects.all():
+            distance = get_distance_from_lat_lon_in_km(
+                user_lat, user_lon, branch.latitude, branch.longitude
+            )
+            branches.append({
+                "id": branch.id,
+                "name": branch.name,
+                "phone_number": str(branch.phone_number),
+                "latitude": branch.latitude,
+                "longitude": branch.longitude,
+                "distance": round(distance, 2),
+            })
+
+        # Masofaga qarab saralash va 10 ta eng yaqinini olish
+        nearest = sorted(branches, key=lambda x: x["distance"])[:5]
+
+        return Response(nearest)

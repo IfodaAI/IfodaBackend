@@ -6,7 +6,6 @@ from utils.models import BaseModel
 
 from .managers import UserManager
 
-
 class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
         ("ADMIN", "Admin"),
