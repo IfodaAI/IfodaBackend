@@ -211,11 +211,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 PAYTECHUZ = {
     'PAYME': {
         'PAYME_ID': '6881b7acd5ee42a97c8b6eff',
-        'PAYME_KEY': 'WcXfTV&otM3XbTiNfzSYrj66RtvFrBK8oh%b',#'HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?',
+        'PAYME_KEY': 'HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?',#'WcXfTV&otM3XbTiNfzSYrj66RtvFrBK8oh%b',
         'ACCOUNT_MODEL': 'orders.models.Order',  # For example: 'orders.models.Order'
         'ACCOUNT_FIELD': 'order_id',
         'AMOUNT_FIELD': 'total_price',
-        'IS_TEST_MODE': True,  # Ishlab chiqarishda False qiling
+        'IS_TEST_MODE': False,  # Ishlab chiqarishda False qiling
     },
     'CLICK': {
         'SERVICE_ID': '79480',
