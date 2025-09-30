@@ -19,7 +19,7 @@ class OrderViewSet(ModelViewSet):
     def payme_gen(self,data):
         payme = PaymeGateway(
             payme_id="6881b7acd5ee42a97c8b6eff",
-            payme_key="HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?",
+            payme_key="WcXfTV&otM3XbTiNfzSYrj66RtvFrBK8oh%b",#"HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?",
             is_test_mode=True
             )
         return payme.create_payment(
