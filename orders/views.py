@@ -11,6 +11,7 @@ from .serializers import OrderSerializer, OrderItemSerializer
 from .permissions import OrderPermission
 from paytechuz.gateways.payme import PaymeGateway
 from paytechuz.gateways.click import ClickGateway
+from utils.utils import get_distance_from_lat_lon_in_km
 
 class OrderViewSet(ModelViewSet):
     queryset = Order.objects.all()
@@ -25,7 +26,7 @@ class OrderViewSet(ModelViewSet):
             )
         return payme.create_payment(
             id=data['id'],
-            amount=data['total_price'],
+            amount=data['amount'],
             return_url="https://webapp.ifoda-shop.uz"
         )
     
@@ -39,7 +40,7 @@ class OrderViewSet(ModelViewSet):
         )
         return click.create_payment(
             id=data['id'],
-            amount=data['total_price'],
+            amount=data['amount'],
             return_url="https://webapp.ifoda-shop.uz",
             description="48273"
         )
@@ -54,9 +55,24 @@ class OrderViewSet(ModelViewSet):
             branch=Branch.objects.get(id=branch)
             order["delivery_latitude"]=branch.latitude
             order["delivery_longitude"]=branch.longitude
+        else:
+            user_latitude=order.get("delivery_latitude")
+            user_longitude=order.get("delivery_longitude")
+            branches = []
+            for branch in Branch.objects.all():
+                distance = get_distance_from_lat_lon_in_km(
+                    user_latitude, user_longitude, branch.latitude, branch.longitude
+                )
+                branches.append({
+                    "id": branch.id,
+                    "distance": round(distance, 2),
+                })
+
+            # Masofaga qarab saralash va 10 ta eng yaqinini olish
+            order["branch"] = [sorted(branches, key=lambda x: x["distance"])[:1]]["id"]
 
         # order create
-        total_price=0
+        amount=0
         order["user"]=request.user.id
         serializer = self.get_serializer(data=order)
         serializer.is_valid(raise_exception=True)
@@ -67,11 +83,10 @@ class OrderViewSet(ModelViewSet):
             item["product"]=ProductSKU.objects.get(id=item["product"])
             order_item=OrderItem(order=order,**item)
             order_item.save()
-            print(order_item.product)
-            total_price+=order_item.price
+            amount+=order_item.price
         
-        # total_price change
-        order.total_price=total_price
+        # amount change
+        order.amount=amount
         order.save()
         if payment_method == 'payme':
             payment_link=self.payme_gen(serializer.data)

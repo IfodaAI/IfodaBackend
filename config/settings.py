@@ -214,7 +214,7 @@ PAYTECHUZ = {
         'PAYME_KEY': 'HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?',#'WcXfTV&otM3XbTiNfzSYrj66RtvFrBK8oh%b',
         'ACCOUNT_MODEL': 'orders.models.Order',  # For example: 'orders.models.Order'
         'ACCOUNT_FIELD': 'order_id',
-        'AMOUNT_FIELD': 'total_price',
+        'AMOUNT_FIELD': 'amount',
         'IS_TEST_MODE': False,  # Ishlab chiqarishda False qiling
     },
     'CLICK': {

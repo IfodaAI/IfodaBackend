@@ -17,7 +17,7 @@ class Order(BaseModel):
     ]
     DELIVERY_METHOD_CHOICES = [("DELIVERY", "Delivery"), ("PICK_UP", "Pick Up")]
 
-    total_price = models.FloatField(blank=True,null=True)
+    amount = models.FloatField(blank=True,null=True)
     status = models.CharField(choices=STATUS_CHOICES, default="PENDING")
     branch = models.ForeignKey(
         Branch, on_delete=models.SET_NULL, blank=True, null=True, related_name="orders"

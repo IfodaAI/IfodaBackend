@@ -12,7 +12,7 @@ class OrderAdminClass(ModelAdmin):
         "user",
         "status",
         "branch",
-        "total_price",
+        "amount",
         "delivery_method",
         "delivery_price",
     ]
