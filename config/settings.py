@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third party apps
+    "paytechuz.integrations.django",
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
@@ -206,3 +207,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+PAYTECHUZ = {
+    'PAYME': {
+        'PAYME_ID': '6881b7acd5ee42a97c8b6eff',
+        'PAYME_KEY': 'HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?',#'HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?',
+        'ACCOUNT_MODEL': 'orders.models.Order',  # For example: 'orders.models.Order'
+        'ACCOUNT_FIELD': 'order_id',
+        'AMOUNT_FIELD': 'total_price',
+        'IS_TEST_MODE': True,  # Ishlab chiqarishda False qiling
+    },
+    'CLICK': {
+        'SERVICE_ID': '79480',
+        'MERCHANT_ID': '30842',
+        'MERCHANT_USER_ID': '48273',
+        'SECRET_KEY': 'KbcSKFP7TDVe',
+        'ACCOUNT_MODEL': 'orders.models.Order',  # For example: 'orders.models.Order'
+        'ACCOUNT_FIELD': 'order_id',
+        'AMOUNT_FIELD': 'total_price',
+        'IS_TEST_MODE': True,  # Ishlab chiqarishda False qiling
+    }
+}
