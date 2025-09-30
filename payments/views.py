@@ -38,8 +38,8 @@ class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
         for item in order.order_items:
             data['detail']["items"].append({
                         "discount": 0,
-                        "title": item.product.product_name,#"Мин.угит IFO UAN-32 0.2 л",
-                        "price": item.price * 100,  # tiyinlarda
+                        "title": "Мин.угит IFO UAN-32 0.2 л",#item.product.product_name,#
+                        "price": 2000 * 100,  # tiyinlarda
                         "count": 1,
                         "code": "03105001001000000",
                         "vat_percent": 12,
