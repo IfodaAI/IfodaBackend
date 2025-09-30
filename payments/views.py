@@ -26,23 +26,26 @@ class PaymentMixin:
 
 class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
     def before_check_perform_transaction(self, params, account):
-        return {
+        order_id=params["account"]["order_id"]
+        order=Order.objects.get(id=order_id)
+        data={
             'allow': True,
             "detail": {
                 "receipt_type": 0,
-                "items": [
-                    {
+                "items": []
+            }
+        }
+        for item in order.order_items:
+            data['detail']["items"].append({
                         "discount": 0,
-                        "title": params["account"]["order_id"],#"Мин.угит IFO UAN-32 0.2 л",
-                        "price": 2000 * 100,  # tiyinlarda
+                        "title": item.product.product_name,#"Мин.угит IFO UAN-32 0.2 л",
+                        "price": item.price * 100,  # tiyinlarda
                         "count": 1,
                         "code": "03105001001000000",
                         "vat_percent": 12,
                         "package_code": "1248694"
-                    }
-                ]
-            }
-        }
+                    })
+        return data
 
     def _check_perform_transaction(self, params):
         account = self._find_account(params)

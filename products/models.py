@@ -107,6 +107,10 @@ class ProductSKU(BaseModel):
     def __str__(self):
         return f"{self.id} - {self.product}"
     
+    @property
+    def product_name(self):
+        return f"{self.product.name} {self.quantity} {self.unit}"
+    
     class Meta:
         verbose_name_plural = "Product SKUs"
 
