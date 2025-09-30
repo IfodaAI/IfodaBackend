@@ -56,8 +56,8 @@ class OrderViewSet(ModelViewSet):
             order["delivery_latitude"]=branch.latitude
             order["delivery_longitude"]=branch.longitude
         else:
-            user_latitude=order.get("delivery_latitude")
-            user_longitude=order.get("delivery_longitude")
+            user_latitude=float(order.get("delivery_latitude"))
+            user_longitude=float(order.get("delivery_longitude"))
             branches = []
             for branch in Branch.objects.all():
                 distance = get_distance_from_lat_lon_in_km(
