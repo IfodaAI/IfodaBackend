@@ -24,7 +24,7 @@ class OrderViewSet(ModelViewSet):
             )
         return payme.create_payment(
             id=data['id'],
-            amount=data['amount'],
+            amount=data['total_price'],
             return_url="https://webapp.ifoda-shop.uz"
         )
     
@@ -38,7 +38,7 @@ class OrderViewSet(ModelViewSet):
         )
         return click.create_payment(
             id=data['id'],
-            amount=data['amount'],
+            amount=data['total_price'],
             return_url="https://webapp.ifoda-shop.uz",
             description="48273"
         )
