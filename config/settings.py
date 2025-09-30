@@ -224,7 +224,7 @@ PAYTECHUZ = {
         'SECRET_KEY': 'KbcSKFP7TDVe',
         'ACCOUNT_MODEL': 'orders.models.Order',  # For example: 'orders.models.Order'
         'ACCOUNT_FIELD': 'order_id',
-        'AMOUNT_FIELD': 'total_price',
+        'COMMISSION_PERCENT': 0.0,
         'IS_TEST_MODE': True,  # Ishlab chiqarishda False qiling
     }
 }

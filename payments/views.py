@@ -25,29 +25,29 @@ class PaymentMixin:
         print(f"Order {order.id} {status} — params: {params}, txn_id: {transaction.id}", flush=True)
 
 class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
-    # def before_check_perform_transaction(self, params, account):
-    #     return {
-    #         'allow': True,
-    #         "detail": {
-    #             "receipt_type": 0,
-    #             "items": [
-    #                 {
-    #                     "discount": 0,
-    #                     "title": "Мин.угит IFO UAN-32 0.2 л",
-    #                     "price": 1000 * 100,  # tiyinlarda
-    #                     "count": 1,
-    #                     "code": "03105001001000000",
-    #                     "vat_percent": 12,
-    #                     "package_code": "1248694"
-    #                 }
-    #             ]
-    #         }
-    #     }
+    def before_check_perform_transaction(self, params, account):
+        return {
+            'allow': True,
+            "detail": {
+                "receipt_type": 0,
+                "items": [
+                    {
+                        "discount": 0,
+                        "title": "Мин.угит IFO UAN-32 0.2 л",
+                        "price": 1000 * 100,  # tiyinlarda
+                        "count": 1,
+                        "code": "03105001001000000",
+                        "vat_percent": 12,
+                        "package_code": "1248694"
+                    }
+                ]
+            }
+        }
 
-    # def _check_perform_transaction(self, params):
-    #     account = self._find_account(params)
-    #     self._validate_amount(account, params.get('amount'))
-    #     return self.before_check_perform_transaction(params, account) or {'allow': True}
+    def _check_perform_transaction(self, params):
+        account = self._find_account(params)
+        self._validate_amount(account, params.get('amount'))
+        return self.before_check_perform_transaction(params, account) or {'allow': True}
 
     def successfully_payment(self, params, transaction):
         self._update_order_status(transaction, 'paid', params)
