@@ -69,7 +69,7 @@ class OrderViewSet(ModelViewSet):
                 })
 
             # Masofaga qarab saralash va 10 ta eng yaqinini olish
-            order["branch"] = sorted(branches, key=lambda x: x["distance"])[:1]["id"]
+            order["branch"] = sorted(branches, key=lambda x: x["distance"])[0]["id"]
 
         # order create
         amount=0
