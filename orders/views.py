@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from products.models import ProductSKU
+from users.models import Branch
 from .models import Order, OrderItem
 from .serializers import OrderSerializer, OrderItemSerializer
 from .permissions import OrderPermission
@@ -48,6 +49,11 @@ class OrderViewSet(ModelViewSet):
         items=request.data.pop("items")
         order:dict=request.data.pop("order")
         payment_method=order.pop("payment_method")
+        branch=order.get("branch")
+        if branch:
+            branch=Branch.objects.get(id=branch)
+            order["delivery_latitude"]=branch.latitude
+            order["delivery_longitude"]=branch.longitude
 
         # order create
         total_price=0
