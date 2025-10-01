@@ -47,9 +47,9 @@ class OrderViewSet(ModelViewSet):
 
     def create(self, request:HttpRequest|Request, *args, **kwargs):
         # data split
+        data={}
         items=request.data.pop("items")
         order:dict=request.data.pop("order")
-        payment_method=order.pop("payment_method")
         branch=order.get("branch")
         if branch:
             branch=Branch.objects.get(id=branch)
@@ -58,6 +58,7 @@ class OrderViewSet(ModelViewSet):
         else:
             user_latitude=float(order.get("delivery_latitude"))
             user_longitude=float(order.get("delivery_longitude"))
+            payment_method=order.pop("payment_method")
             branches = []
             for branch in Branch.objects.all():
                 distance = get_distance_from_lat_lon_in_km(
@@ -88,16 +89,16 @@ class OrderViewSet(ModelViewSet):
         # amount change
         order.amount=amount
         order.save()
-        if payment_method == 'payme':
-            payment_link=self.payme_gen(serializer.data)
-        else:
-            payment_link=self.click_gen(serializer.data)
+        if order.delivery_method=="DELIVERY":
+            if payment_method == 'payme':
+                payment_link=self.payme_gen(serializer.data)
+            else:
+                payment_link=self.click_gen(serializer.data)
+            data["payment_link"]=payment_link
 
         headers = self.get_success_headers(serializer.data)
-        return Response({
-            "payment_link":payment_link,
-            "order":serializer.data
-            },
+        data["order"]=serializer.data
+        return Response(data,
         status=status.HTTP_201_CREATED, headers=headers)
     
     def perform_create(self, serializer):
