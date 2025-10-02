@@ -1,17 +1,5 @@
 from django.contrib.auth.models import BaseUserManager
-
-def normalize_phone(phone):
-    """Telefon raqamdan bo'sh joy, + va - belgilarini olib tashlab, faqat raqamlarni qaytaradi"""
-    digits = "".join(filter(str.isdigit, phone))
-    if digits.startswith("998") and len(digits) == 12:
-        return "+" + digits
-    elif digits.startswith("0") and len(digits) == 9:
-        return "+998" + digits[1:]
-    elif len(digits) == 9:
-        return "+998" + digits
-    elif digits.startswith("+") and len(digits) == 13:
-        return digits
-    return "+" + digits
+from utils.utils import normalize_phone
 
 class UserManager(BaseUserManager):
     def create_user(self, phone_number, password=None, **extra_fields):

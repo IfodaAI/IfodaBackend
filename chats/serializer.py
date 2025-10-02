@@ -1,10 +1,10 @@
 from utils.serializers import BaseModelSerializer
-from .models import Topic, Message
+from .models import Room, Message
 
 
-class TopicSerializer(BaseModelSerializer):
+class RoomSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
-        model = Topic
+        model = Room
 
 
 class MessageSerializer(BaseModelSerializer):

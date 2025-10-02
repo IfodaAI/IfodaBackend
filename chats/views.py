@@ -1,12 +1,12 @@
 from rest_framework.viewsets import ModelViewSet
 
-from .models import Topic, Message
-from .serializer import TopicSerializer, MessageSerializer
+from .models import Room, Message
+from .serializer import RoomSerializer, MessageSerializer
 
 
-class TopicViewSet(ModelViewSet):
-    queryset = Topic.objects.all()
-    serializer_class = TopicSerializer
+class RoomViewSet(ModelViewSet):
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
 
 
 class MessageViewSet(ModelViewSet):

@@ -17,7 +17,7 @@ class Order(BaseModel):
     ]
     DELIVERY_METHOD_CHOICES = [("DELIVERY", "Delivery"), ("PICK_UP", "Pick Up")]
 
-    amount = models.FloatField(blank=True,null=True)
+    amount = models.FloatField(blank=True, null=True)
     status = models.CharField(choices=STATUS_CHOICES, default="PENDING")
     branch = models.ForeignKey(
         Branch, on_delete=models.SET_NULL, blank=True, null=True, related_name="orders"
@@ -54,8 +54,32 @@ class OrderItem(BaseModel):
 
     def save(self):
         self.price = self.product.price * self.quantity
-        print("\n\n\nin model",self.price)
+        print("\n\n\nin model", self.price)
         return super().save()
 
     def __str__(self):
         return f"OrderItem {self.id} of Order {self.order.id}"
+
+
+class Delivery(BaseModel):
+    STATUS_CHOICES = [
+        ("RECEIVED", "Received"),
+        ("PROCESSING", "Processing"),
+        ("IN_TRANSIT", "In Transit"),
+        ("OUT_FOR_DELIVERY", "Out For Delivery"),
+        ("DELIVERED", "Delivered"),
+        ("REJECTED", "Rejected"),
+    ]
+
+    order = models.OneToOneField(
+        Order, on_delete=models.CASCADE, related_name="delivery"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="RECEIVED")
+    tracking_number = models.CharField(max_length=100, null=True, blank=True)
+    courier_name = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return f"Delivery for Order {self.order.id}"
+
+    class Meta:
+        verbose_name_plural = "Deliveries"

@@ -6,6 +6,7 @@ from utils.models import BaseModel
 
 from .managers import UserManager
 
+
 class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
         ("ADMIN", "Admin"),
@@ -33,12 +34,19 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
         return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name + self.last_name if self.first_name or self.last_name else self.phone_number}"
 
 
 class TelegramUser(BaseModel):
     telegram_id = models.BigIntegerField(unique=True)
-    username = models.CharField(max_length=32, blank=True, null=True,unique=True)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="telegram_user",
+        blank=True,
+        null=True,
+    )
+    username = models.CharField(max_length=32, blank=True, null=True, unique=True)
     first_name = models.CharField(max_length=64, blank=True, null=True)
     last_name = models.CharField(max_length=64, blank=True, null=True)
     region = models.CharField(max_length=50, blank=True, null=True)
@@ -47,6 +55,7 @@ class TelegramUser(BaseModel):
 
     def __str__(self):
         return f"{self.username}"
+
 
 class Branch(BaseModel):
     brainch_id = models.BigIntegerField(
@@ -63,6 +72,5 @@ class Branch(BaseModel):
     def __str__(self):
         return f"{self.name}"
 
-    
     class Meta:
         verbose_name_plural = "Branches"

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "phonenumber_field",
     "django_filters",
+    "channels",
     "corsheaders",
     "imagekit",
     # Local apps
@@ -79,6 +80,13 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Backend schema for Ifoda API.",
 }
 
+# Channels (WebSocket) configurations.
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+
 # Django Rest Framework (API) configurations.
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -88,9 +96,9 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 100
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 100,
 }
 
 # Unfold Admin (Pretty admin panel) configurations.
@@ -149,7 +157,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
-
+ASGI_APPLICATION = "config.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -209,22 +217,22 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 PAYTECHUZ = {
-    'PAYME': {
-        'PAYME_ID': '6881b7acd5ee42a97c8b6eff',
-        'PAYME_KEY': 'HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?',#'WcXfTV&otM3XbTiNfzSYrj66RtvFrBK8oh%b',
-        'ACCOUNT_MODEL': 'orders.models.Order',  # For example: 'orders.models.Order'
-        'ACCOUNT_FIELD': 'order_id',
-        'AMOUNT_FIELD': 'amount',
-        'IS_TEST_MODE': False,  # Ishlab chiqarishda False qiling
+    "PAYME": {
+        "PAYME_ID": "6881b7acd5ee42a97c8b6eff",
+        "PAYME_KEY": "HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?",  #'WcXfTV&otM3XbTiNfzSYrj66RtvFrBK8oh%b',
+        "ACCOUNT_MODEL": "orders.models.Order",  # For example: 'orders.models.Order'
+        "ACCOUNT_FIELD": "order_id",
+        "AMOUNT_FIELD": "amount",
+        "IS_TEST_MODE": False,  # Ishlab chiqarishda False qiling
     },
-    'CLICK': {
-        'SERVICE_ID': '79480',
-        'MERCHANT_ID': '30842',
-        'MERCHANT_USER_ID': '48273',
-        'SECRET_KEY': 'KbcSKFP7TDVe',
-        'ACCOUNT_MODEL': 'orders.models.Order',  # For example: 'orders.models.Order'
-        'ACCOUNT_FIELD': 'order_id',
-        'COMMISSION_PERCENT': 0.0,
-        'IS_TEST_MODE': True,  # Ishlab chiqarishda False qiling
-    }
+    "CLICK": {
+        "SERVICE_ID": "79480",
+        "MERCHANT_ID": "30842",
+        "MERCHANT_USER_ID": "48273",
+        "SECRET_KEY": "KbcSKFP7TDVe",
+        "ACCOUNT_MODEL": "orders.models.Order",  # For example: 'orders.models.Order'
+        "ACCOUNT_FIELD": "order_id",
+        "COMMISSION_PERCENT": 0.0,
+        "IS_TEST_MODE": True,  # Ishlab chiqarishda False qiling
+    },
 }

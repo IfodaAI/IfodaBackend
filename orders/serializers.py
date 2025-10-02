@@ -1,5 +1,5 @@
 from utils.serializers import BaseModelSerializer
-from .models import Order, OrderItem
+from .models import Order, OrderItem, Delivery
 
 
 class OrderSerializer(BaseModelSerializer):
@@ -10,3 +10,8 @@ class OrderSerializer(BaseModelSerializer):
 class OrderItemSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = OrderItem
+
+
+class DeliverySerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
+        model = Delivery

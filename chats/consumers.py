@@ -1,0 +1,81 @@
+import json
+from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from .models import Room, Message
+from users.models import TelegramUser
+
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        user = self.scope.get("user")
+        if user is None or user.is_anonymous:
+            await self.close()
+            return
+
+        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        self.room_group_name = f"chat_{self.room_name}"
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        if hasattr(self, "room_group_name"):
+            await self.channel_layer.group_discard(
+                self.room_group_name, self.channel_name
+            )
+
+    async def receive(self, text_data=None, bytes_data=None):
+        data = json.loads(text_data)
+        text = data.get("text")
+        role = data.get("role", "QUESTION")
+        content_type = data.get("content_type", "TEXT")
+        user = self.scope.get("user")
+        sender = None
+        if user and not user.is_anonymous:
+            sender = await self.get_telegram_user(user)
+        if not sender:
+            await self.close()
+            return
+
+        message = await self.save_message(
+            self.room_name, text, role, content_type, sender
+        )
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "chat.message",
+                "message": {
+                    "id": str(message.id),
+                    "text": message.text,
+                    "role": message.role,
+                    "content_type": message.content_type,
+                    "status": message.status,
+                    "sender": str(message.sender.id),
+                    "created_date": message.created_date.isoformat(),
+                },
+            },
+        )
+
+    async def chat_message(self, event):
+        print(event["message"])
+        await self.send(text_data=json.dumps(event["message"]))
+
+    @database_sync_to_async
+    def save_message(self, room_name, text, role, content_type, sender):
+        room, _ = Room.objects.get_or_create(name=room_name)
+        if sender and sender.user and getattr(sender.user, "role", None) == "USER":
+            role = "QUESTION"
+        else:
+            role = "ANSWER"
+        return Message.objects.create(
+            room=room,
+            text=text,
+            role=role,
+            content_type=content_type,
+            sender=sender,
+        )
+
+    @database_sync_to_async
+    def get_telegram_user(self, user):
+        return getattr(user, "telegram_user", None)
