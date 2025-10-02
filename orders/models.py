@@ -22,7 +22,7 @@ class Order(BaseModel):
     branch = models.ForeignKey(
         Branch, on_delete=models.SET_NULL, blank=True, null=True, related_name="orders"
     )
-    shipping_address = models.CharField(max_length=50, blank=True, null=True)
+    shipping_address = models.CharField(max_length=250, blank=True, null=True)
     phone_number = PhoneNumberField(blank=True, null=True)
     delivery_method = models.CharField(
         choices=DELIVERY_METHOD_CHOICES, default="DELIVERY"
