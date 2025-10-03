@@ -2,6 +2,7 @@ from paytechuz.integrations.django.views import (
     BasePaymeWebhookView,
     BaseClickWebhookView,
 )
+# from paytechuz.integrations.django.models import PaymentTransaction
 from orders.models import Order
 
 
@@ -43,15 +44,15 @@ class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
         return self.before_check_perform_transaction(params, account) or {"allow": True}
 
     def successfully_payment(self, params, transaction):
-        self._update_order_status(transaction, "paid", params)
+        self._update_order_status(transaction, "COMPLETED", params)
 
     def cancelled_payment(self, params, transaction):
-        self._update_order_status(transaction, "cancelled", params)
+        self._update_order_status(transaction, "REJECTED", params)
 
 
 class ClickWebhookView(PaymentMixin, BaseClickWebhookView):
     def successfully_payment(self, params, transaction):
-        self._update_order_status(transaction, "paid", params)
+        self._update_order_status(transaction, "COMPLETED", params)
 
     def cancelled_payment(self, params, transaction):
-        self._update_order_status(transaction, "cancelled", params)
+        self._update_order_status(transaction, "REJECTED", params)
