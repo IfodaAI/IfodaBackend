@@ -1,7 +1,7 @@
 from django.db import models
 from utils.models import BaseModel
 from imagekit.models import ProcessedImageField
-from imagekit.processors import ResizeToFill
+
 
 class DiseaseCategory(BaseModel):
     title = models.CharField(max_length=255)
@@ -34,7 +34,6 @@ class ProductCategory(BaseModel):
     def __str__(self):
         return self.title
 
-
     # Prevents model from being displayed as "Product categorys" in admin panel
     class Meta:
         verbose_name_plural = "Product categories"
@@ -53,7 +52,7 @@ class ProductSubcategory(BaseModel):
 
     def __str__(self):
         return self.title
-    
+
     # Prevents model from being displayed as "Product subcategorys" in admin panel
     class Meta:
         verbose_name_plural = "Product subcategories"
@@ -74,16 +73,17 @@ class Product(BaseModel):
         blank=True,
         related_name="products",
     )
-    image_thumbnail = ProcessedImageField(upload_to='avatars',
-                                        # processors=[ResizeToFill(100, 50)],
-                                        format='JPEG',
-                                        options={'quality': 60},
-                                        blank=True,
-                                        null=True
-                                        )
+    image_thumbnail = ProcessedImageField(
+        upload_to="product_thumbnails",
+        format="JPEG",
+        options={"quality": 60},
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return self.name
+
 
 class ProductSKU(BaseModel):
     UNIT_CHOICES = [
@@ -93,6 +93,7 @@ class ProductSKU(BaseModel):
         ("kg", "Kilogram"),
     ]
 
+    is_small_package = models.BooleanField(default=False)
     quantity = models.IntegerField()
     price = models.FloatField()
     unit = models.CharField(choices=UNIT_CHOICES)
@@ -106,13 +107,17 @@ class ProductSKU(BaseModel):
 
     def __str__(self):
         return f"{self.id} - {self.product}"
-    
+
     @property
     def product_name(self):
         return f"{self.product.name} {self.quantity} {self.unit}"
-    
+
     class Meta:
+        # Prevents model from being displayed as "Product skus" in admin panel
         verbose_name_plural = "Product SKUs"
+
+        # Prevents model from being displayed as "Product sku" in admin panel
+        verbose_name = "Product SKU"
 
 
 class ProductImage(BaseModel):
@@ -123,7 +128,7 @@ class ProductImage(BaseModel):
         null=True,
         related_name="product_images",
     )
-    image = models.ImageField(upload_to="product_images/")
+    image = models.ImageField(upload_to="product_images")
 
     def __str__(self):
         return f"{self.product}'s image"

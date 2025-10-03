@@ -5,7 +5,6 @@ from unfold.admin import ModelAdmin
 from .models import Order, OrderItem, Delivery
 
 
-
 @admin.register(Delivery)
 class DeliveryAdminClass(ModelAdmin):
     list_display = ["id", "order", "tracking_number", "courier_name"]

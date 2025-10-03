@@ -2,7 +2,6 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import Room, Message
-from users.models import TelegramUser
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -29,13 +28,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text = data.get("text")
         role = data.get("role", "QUESTION")
         content_type = data.get("content_type", "TEXT")
-        user = self.scope.get("user")
-        sender = None
-        if user and not user.is_anonymous:
-            sender = await self.get_telegram_user(user)
-        if not sender:
-            await self.close()
-            return
+        sender = self.scope.get("user")
 
         message = await self.save_message(
             self.room_name, text, role, content_type, sender
@@ -75,7 +68,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content_type=content_type,
             sender=sender,
         )
-
-    @database_sync_to_async
-    def get_telegram_user(self, user):
-        return getattr(user, "telegram_user", None)

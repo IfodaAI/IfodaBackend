@@ -1,12 +1,21 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 
 from utils.models import BaseModel
-from users.models import TelegramUser
 from products.models import ProductSKU
+
+User = get_user_model()
 
 
 class Room(BaseModel):
     name = models.CharField(max_length=50)
+    owner = models.ForeignKey(
+        User,
+        related_name="rooms",
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
         return self.name
@@ -26,7 +35,9 @@ class Message(BaseModel):
         ("REPLIED", "Replied"),
     ]
 
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="messages", null=True, blank=True)
+    room = models.ForeignKey(
+        Room, on_delete=models.CASCADE, related_name="messages", null=True, blank=True
+    )
     content_type = models.CharField(choices=CONTENT_TYPE_CHOICES, default="TEXT")
     status = models.CharField(choices=STATUS_CHOICES, default="UNREAD")
     role = models.CharField(choices=ROLE_CHOICES, default="QUESTION")
@@ -34,7 +45,7 @@ class Message(BaseModel):
     image = models.ImageField(upload_to="messages/", blank=True, null=True)
     products = models.ManyToManyField(ProductSKU, related_name="messages", blank=True)
     sender = models.ForeignKey(
-        TelegramUser,
+        User,
         on_delete=models.CASCADE,
         related_name="messages",
         blank=True,

@@ -54,7 +54,7 @@ class TelegramUser(BaseModel):
     phone_number = PhoneNumberField(unique=True, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.username}"
+        return self.username
 
 
 class Branch(BaseModel):
@@ -70,7 +70,8 @@ class Branch(BaseModel):
     phone_number = PhoneNumberField(unique=True)
 
     def __str__(self):
-        return f"{self.name}"
+        return self.name
 
     class Meta:
+        # Prevents model from being displayed as "Branchs" in admin panel
         verbose_name_plural = "Branches"
