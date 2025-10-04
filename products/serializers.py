@@ -47,6 +47,7 @@ class ProductSerializer(BaseModelSerializer):
 class ProductSKUSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductSKU
+        depth=1
 
 class ProductImageSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):

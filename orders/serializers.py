@@ -24,9 +24,9 @@ class OrderItemSerializer(BaseModelSerializer):
         super(OrderItemSerializer, self).__init__(*args, **kwargs)
         request: HttpRequest = self.context.get("request")
         if request and request.method == "GET":
-            product_sku = request.GET.get("product_sku")
-            if product_sku == "true":
-                self.fields["product_sku"] = ProductSKUSerializer(context=self.context)
+            product = request.GET.get("product")
+            if product == "true":
+                self.fields["product"] = ProductSKUSerializer(context=self.context)
 
 
 class DeliverySerializer(BaseModelSerializer):
