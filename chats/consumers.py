@@ -29,6 +29,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         role = data.get("role", "QUESTION")
         content_type = data.get("content_type", "TEXT")
         sender = self.scope.get("user")
+        print("\n\n\nsender:",sender)
 
         message = await self.save_message(
             self.room_name, text, role, content_type, sender
@@ -51,13 +52,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def chat_message(self, event):
-        print(event["message"])
         await self.send(text_data=json.dumps(event["message"]))
 
     @database_sync_to_async
     def save_message(self, room_name, text, role, content_type, sender):
         room, _ = Room.objects.get_or_create(name=room_name)
-        if sender and sender.user and getattr(sender.user, "role", None) == "USER":
+        if sender and sender and getattr(sender, "role", None) == "USER":
             role = "QUESTION"
         else:
             role = "ANSWER"

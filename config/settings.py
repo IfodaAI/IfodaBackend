@@ -24,6 +24,7 @@ CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     # App for prettier django admin panel. MUST BE ON TOP OF ALL APPS.
     "unfold",
     # Django's default apps.
@@ -156,7 +157,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.application"
+# WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 # Database

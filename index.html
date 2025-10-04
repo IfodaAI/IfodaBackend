@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket Test</title>
+</head>
+<body>
+  <h1>WebSocket Test</h1>
+  <script>
+    // Token va room_name ni o'zingizga moslang
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU5ODE4MTMzLCJpYXQiOjE3NTk1NTg5MzMsImp0aSI6IjUyYTc5ZWIxYWQ4OTQ0NTk5ZWRlYTc1NTYzNDdhNDllIiwidXNlcl9pZCI6ImI3NTA2ODdlLWZhMjYtNDQ5MC1iZjhiLWE1ZDg5OTE5MTBhZiJ9.yM0N17jyUv5iQIPOH3is98NY5TXvQl2T8TB0gKiTF8Y";
+    const roomName = "Test";
+
+    // Agar lokal server bo'lsa:
+    const socketUrl = `ws://127.0.0.1:8000/ws/chat/${roomName}/?token=${token}`;
+    
+    // Agar prod bo'lsa (https bo'lgani uchun wss ishlatish kerak):
+    // const socketUrl = `wss://api.ifoda-shop.uz/ws/chat/${roomName}/?token=${token}`;
+
+    const chatSocket = new WebSocket(socketUrl);
+
+    // Ulanish ochilganda
+    chatSocket.onopen = function () {
+      console.log("WebSocket connected ✅");
+      chatSocket.send(JSON.stringify({
+        text: "Salom!",
+        role: "QUESTION",
+        content_type: "TEXT"
+      }));
+    };
+
+    // Serverdan xabar kelganda
+    chatSocket.onmessage = function (event) {
+      console.log("Message received:", event.data);
+    };
+
+    // Xatolik bo'lsa
+    chatSocket.onerror = function (error) {
+      console.error("WebSocket error:", error);
+    };
+
+    // Ulanish yopilganda
+    chatSocket.onclose = function (event) {
+      console.log("WebSocket closed ❌", event);
+    };
+  </script>
+</body>
+</html>
