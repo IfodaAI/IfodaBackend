@@ -12,10 +12,10 @@
     const roomName = "Test";
 
     // Agar lokal server bo'lsa:
-    const socketUrl = `ws://127.0.0.1:8000/ws/chat/${roomName}/?token=${token}`;
+    // const socketUrl = `ws://127.0.0.1:8000/ws/chat/${roomName}/?token=${token}`;
     
     // Agar prod bo'lsa (https bo'lgani uchun wss ishlatish kerak):
-    // const socketUrl = `wss://api.ifoda-shop.uz/ws/chat/${roomName}/?token=${token}`;
+    const socketUrl = `ws://api.ifoda-shop.uz/ws/chat/${roomName}/?token=${token}`;
 
     const chatSocket = new WebSocket(socketUrl);
 
