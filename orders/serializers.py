@@ -13,7 +13,7 @@ class OrderSerializer(BaseModelSerializer):
         if request and request.method == "GET":
             order_items = request.GET.get("order_items")
             if order_items == "true":
-                self.fields["order_items"] = OrderItem(context=self.context,many=True)
+                self.fields["order_items"] = OrderItemSerializer(context=self.context,many=True)
 
 
 class OrderItemSerializer(BaseModelSerializer):
