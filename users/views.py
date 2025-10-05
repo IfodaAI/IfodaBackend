@@ -9,8 +9,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .permissions import PostAndCheckUserOnly
 
-from .models import User, TelegramUser, Branch
-from .serializers import UserSerializer, TelegramUserSerializer, BranchSerializer, UserRegisterSerializer
+from .models import User, TelegramUser, Branch, Region, District
+from .serializers import UserSerializer, TelegramUserSerializer, BranchSerializer, UserRegisterSerializer, RegionSerializer, DistrictSerializer
 from utils.utils import get_distance_from_lat_lon_in_km
 
 class UserViewSet(ModelViewSet):
@@ -85,3 +85,12 @@ class BranchViewSet(ModelViewSet):
         nearest = sorted(branches, key=lambda x: x["distance"])[:5]
 
         return Response(nearest)
+
+
+class RegionViewSet(ModelViewSet):
+    queryset = Region.objects.all()
+    serializer_class = RegionSerializer
+
+class DistrictViewSet(ModelViewSet):
+    queryset = District.objects.all()
+    serializer_class = DistrictSerializer

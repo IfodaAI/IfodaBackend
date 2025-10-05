@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from .models import TelegramUser, Branch
+from .models import TelegramUser, Branch, Region, District
 from utils.serializers import BaseModelSerializer
 from rest_framework import serializers
 
@@ -17,6 +17,7 @@ class UserSerializer(BaseModelSerializer):
             "is_active",
             "role",
         )  # You cannot use __all__ because otherwise serializer will send user's password upon GET request as well.
+
 
 class UserRegisterSerializer(BaseModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
@@ -39,6 +40,7 @@ class UserRegisterSerializer(BaseModelSerializer):
         user.save()
         return user
 
+
 class TelegramUserSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = TelegramUser
@@ -47,3 +49,13 @@ class TelegramUserSerializer(BaseModelSerializer):
 class BranchSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Branch
+
+
+class RegionSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
+        model = Region
+
+
+class DistrictSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
+        model = District

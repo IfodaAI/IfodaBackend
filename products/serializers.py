@@ -35,12 +35,12 @@ class ProductSerializer(BaseModelSerializer):
         request: HttpRequest = self.context.get("request")
         if request and request.method == "GET":
             product_skus = request.GET.get("product_skus")
+            product_images = request.GET.get("product_images")
+            category = request.GET.get("category")
             if product_skus == "true":
                 self.fields["product_skus"] = ProductSKUSerializer(context=self.context,many=True)
-            product_images = request.GET.get("product_images")
             if product_images == "true":
                 self.fields["product_images"] = ProductImageSerializer(context=self.context,many=True)
-            category = request.GET.get("category")
             if category == "true":
                 self.fields["category"] = ProductSubcategorySerializer(context=self.context)
 

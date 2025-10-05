@@ -49,8 +49,10 @@ class TelegramUser(BaseModel):
     username = models.CharField(max_length=32, blank=True, null=True, unique=True)
     first_name = models.CharField(max_length=64, blank=True, null=True)
     last_name = models.CharField(max_length=64, blank=True, null=True)
-    region = models.CharField(max_length=50, blank=True, null=True)
-    district = models.CharField(max_length=50, blank=True, null=True)
+    region = models.ForeignKey("Region", on_delete=models.SET_NULL, blank=True, null=True)
+    district = models.ForeignKey(
+        "District", on_delete=models.SET_NULL, blank=True, null=True
+    )
     phone_number = PhoneNumberField(unique=True, blank=True, null=True)
 
     def __str__(self):
@@ -75,3 +77,22 @@ class Branch(BaseModel):
     class Meta:
         # Prevents model from being displayed as "Branchs" in admin panel
         verbose_name_plural = "Branches"
+
+
+class Region(BaseModel):
+    name = models.CharField(max_length=255, unique=True)
+    small_package = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
+class District(BaseModel):
+    name = models.CharField(max_length=255)
+    region = models.ForeignKey(
+        Region, on_delete=models.CASCADE, related_name="districts"
+    )
+    small_package = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
