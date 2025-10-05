@@ -11,8 +11,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_name = f"chat_{self.room_name}"
+        self.room_id = self.scope["url_route"]["kwargs"]["room_id"]
+        self.room_group_name = f"chat_{self.room_id}"
 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
@@ -31,7 +31,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender = self.scope.get("user")
 
         message = await self.save_message(
-            self.room_name, text, role, content_type, sender
+            self.room_id, text, role, content_type, sender
         )
 
         await self.channel_layer.group_send(
@@ -51,13 +51,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def chat_message(self, event):
-        print(event["message"])
         await self.send(text_data=json.dumps(event["message"]))
 
     @database_sync_to_async
-    def save_message(self, room_name, text, role, content_type, sender):
-        room, _ = Room.objects.get_or_create(name=room_name)
-        if sender and sender.user and getattr(sender.user, "role", None) == "USER":
+    def save_message(self, room_id, text, role, content_type, sender):
+        try:
+            room = Room.objects.get(id=room_id)
+        except Room.DoesNotExist:
+            room = None
+        if sender and getattr(sender, "role", None) == "USER":
             role = "QUESTION"
         else:
             role = "ANSWER"
