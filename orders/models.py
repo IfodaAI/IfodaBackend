@@ -53,7 +53,7 @@ class OrderItem(BaseModel):
     price = models.FloatField()
 
     def save(self):
-        self.price = self.product.price * self.quantity=
+        self.price = self.product.price * self.quantity
         return super().save()
 
     def __str__(self):
