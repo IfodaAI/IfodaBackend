@@ -29,7 +29,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         role = data.get("role", "QUESTION")
         content_type = data.get("content_type", "TEXT")
         sender = self.scope.get("user")
-        print("\n\n\nsender:",sender)
 
         message = await self.save_message(
             self.room_id, text, role, content_type, sender
@@ -52,7 +51,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def chat_message(self, event):
-        print(event["message"])
         await self.send(text_data=json.dumps(event["message"]))
 
     @database_sync_to_async

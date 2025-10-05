@@ -13,10 +13,10 @@ class PaymentMixin:
         order = Order.objects.get(id=transaction.account_id)
         order.status = status
         order.save()
-        print(
-            f"Order {order.id} {status} — params: {params}, txn_id: {transaction.id}",
-            flush=True,
-        )
+        # print(
+        #     f"Order {order.id} {status} — params: {params}, txn_id: {transaction.id}",
+        #     flush=True,
+        # )
 
 
 class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):

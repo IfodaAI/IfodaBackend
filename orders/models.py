@@ -54,7 +54,6 @@ class OrderItem(BaseModel):
 
     def save(self):
         self.price = self.product.price * self.quantity
-        print("\n\n\nin model", self.price)
         return super().save()
 
     def __str__(self):
