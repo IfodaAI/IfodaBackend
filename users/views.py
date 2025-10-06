@@ -83,9 +83,7 @@ class BranchViewSet(ModelViewSet):
 
         # Masofaga qarab saralash va 10 ta eng yaqinini olish
         nearest = sorted(branches, key=lambda x: x["distance"])[:5]
-
         return Response(nearest)
-
 
 class RegionViewSet(ModelViewSet):
     queryset = Region.objects.all()
@@ -94,3 +92,4 @@ class RegionViewSet(ModelViewSet):
 class DistrictViewSet(ModelViewSet):
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
+    filterset_fields=["region"]
