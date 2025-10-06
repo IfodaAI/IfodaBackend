@@ -54,8 +54,8 @@ staticfiles/
 
 # Migrations (agar versionda saqlashni xohlamasangiz)
 # *lekin production uchun odatda migration fayllarni git-da saqlash shart*
-*/migrations/*
-!*/migrations/__init__.py
+# */migrations/*
+# !*/migrations/__init__.py
 
 # IDE / Editor configs
 .vscode/
