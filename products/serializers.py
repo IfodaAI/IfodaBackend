@@ -30,46 +30,49 @@ class ProductSubcategorySerializer(BaseModelSerializer):
         model = ProductSubcategory
 
 class ProductSerializer(BaseModelSerializer):
-    product_skus = SerializerMethodField()
     class Meta(BaseModelSerializer.Meta):
         model = Product
-    
+
     def __init__(self, *args, **kwargs):
         super(ProductSerializer, self).__init__(*args, **kwargs)
         request: HttpRequest = self.context.get("request")
-        if request and request.method == "GET":
-            # product_skus = request.GET.get("product_skus")
-            product_images = request.GET.get("product_images")
-            category = request.GET.get("category")
-            # if product_skus == "true":
-            #     self.fields["product_skus"] = ProductSKUSerializer(context=self.context,many=True)
-            if product_images == "true":
-                self.fields["product_images"] = ProductImageSerializer(context=self.context,many=True)
-            if category == "true":
-                self.fields["category"] = ProductSubcategorySerializer(context=self.context)
 
-    def get_product_skus(self, obj):
-        request:HttpRequest = self.context.get("request")
-        if not request:
-            return []
+        if not request or request.method != "GET":
+            return  # faqat GET bo‘lsa ishlasin
 
-        # Faqat GET methodda ishlaymiz
-        if request.method != "GET":
-            return []
+        product_skus = request.GET.get("product_skus")
+        product_images = request.GET.get("product_images")
+        category = request.GET.get("category")
 
-        # Agar query param orqali filter berilsa:
-        telegram_id = request.GET.get("telegram_id")
+        # === product_skus faqat true bo‘lgandagina qo‘shiladi ===
+        if not product_skus == "true":
+            # ya’ni product_skus field umuman chiqmaydi
+            pass
+        else:
+            self.fields["product_skus"] = SerializerMethodField()
 
-        # Filterni quramiz
-        skus = obj.product_skus.all()
-        if telegram_id:
-            tg_user=TelegramUser.objects.get(telegram_id=telegram_id)
-            if not tg_user.region.small_package and not tg_user.district.small_package:
-                skus = skus.filter(is_small_package=False)
+            def get_product_skus(inner_self, obj):
+                telegram_id = request.GET.get("telegram_id")
+                skus = obj.product_skus.all()
 
-        # Natijani serialize qilamiz
-        serializer = ProductSKUSerializer(skus, many=True, context=self.context)
-        return serializer.data
+                if telegram_id:
+                    try:
+                        tg_user = TelegramUser.objects.get(telegram_id=telegram_id)
+                        if not tg_user.region.small_package and not tg_user.district.small_package:
+                            skus = skus.filter(is_small_package=False)
+                    except TelegramUser.DoesNotExist:
+                        pass
+
+                return ProductSKUSerializer(skus, many=True, context=self.context).data
+
+            setattr(self.__class__, "get_product_skus", get_product_skus)
+
+        # === boshqa fieldlar ham shart bilan qo‘shiladi ===
+        if product_images == "true":
+            self.fields["product_images"] = ProductImageSerializer(context=self.context, many=True)
+
+        if category == "true":
+            self.fields["category"] = ProductSubcategorySerializer(context=self.context)
 
 class ProductSKUSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):

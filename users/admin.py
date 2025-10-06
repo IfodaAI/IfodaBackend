@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 
 from unfold.admin import ModelAdmin
 
-from .models import User, TelegramUser, Branch
+from .models import User, TelegramUser, Branch, Region, District
 
 admin.site.unregister(Group)
 
@@ -37,3 +37,12 @@ class BranchAdminClass(ModelAdmin):
 
     def location(self, obj):
         return f"{obj.latitude}° N {obj.longitude}° W"
+
+@admin.register(Region)
+class RegionAdminClass(ModelAdmin):
+    list_display = ["id", "name"]
+
+    
+@admin.register(District)
+class DistrictAdminClass(ModelAdmin):
+    list_display = ["id", "name"]

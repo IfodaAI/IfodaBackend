@@ -70,7 +70,7 @@ PHONENUMBER_DB_FORMAT = "E164"  # Forces phone number inputs such as "9989012345
 
 # Simple JWT (Authorization) configurations.
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=3),  # Access token will last 3 days.
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),  # Access token will last 3 days.
     "REFRESH_TOKEN_LIFETIME": timedelta(days=14),  # Refresh token will last 14 days.
     "ROTATE_REFRESH_TOKENS": True,  # This makes simple_jwt return new refresh token if current one expired.
 }

@@ -7,6 +7,8 @@ from .models import (
     ProductCategory,
     ProductSubcategory,
     ProductImage,
+    DiseaseCategory,
+    Disease
 )
 
 
@@ -37,7 +39,14 @@ class ProductAdminClass(ModelAdmin):
 class ProductCategoryAdminClass(ModelAdmin):
     list_display = ["id", "title", "slug"]
 
-
 @admin.register(ProductSubcategory)
 class ProductSubcategoryAdminClass(ModelAdmin):
     list_display = ["id", "title", "slug", "category"]
+
+@admin.register(DiseaseCategory)
+class DiseaseCategoryAdminClass(ModelAdmin):
+    list_display = ["id", "title", "slug"]
+
+@admin.register(Disease)
+class DiseaseAdminClass(ModelAdmin):
+    list_display = ["id", "name", "category"]
