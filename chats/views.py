@@ -25,9 +25,9 @@ class RoomViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        # If user's role is admin, send all orders
-        if user.is_superuser or user.role == "ADMIN":
-            return Room.objects.all()
+        # # If user's role is admin, send all orders
+        # if user.is_superuser or user.role == "ADMIN":
+        #     return Room.objects.all()
 
         # If it's normal user, send only only their own orders.
         return Room.objects.filter(owner=user)
