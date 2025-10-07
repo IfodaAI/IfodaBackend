@@ -19,7 +19,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = env.str("SECRET_KEY")
 DEBUG = env.bool("DEBUG", default=False)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
-CSRF_TRUSTED_ORIGINS = env.list("ALLOWED_HOSTS")
+CSRF_TRUSTED_ORIGINS = [
+    "https://api.ifoda-shop.uz",
+]
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
 
 # Application definition
