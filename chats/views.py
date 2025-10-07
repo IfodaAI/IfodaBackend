@@ -21,6 +21,16 @@ class RoomViewSet(ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def get_queryset(self):
+        user = self.request.user
+
+        # If user's role is admin, send all orders
+        if user.is_superuser or user.role == "ADMIN":
+            return Room.objects.all()
+
+        # If it's normal user, send only only their own orders.
+        return Room.objects.filter(owner=user)
 
 class MessageViewSet(ModelViewSet):
     queryset = Message.objects.all()
