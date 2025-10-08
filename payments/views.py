@@ -44,7 +44,7 @@ class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
         return self.before_check_perform_transaction(params, account) or {"allow": True}
 
     def successfully_payment(self, params, transaction):
-        self._update_order_status(transaction, "COMPLETED", params)
+        self._update_order_status(transaction, "PROCESSING", params)
 
     def cancelled_payment(self, params, transaction):
         self._update_order_status(transaction, "REJECTED", params)
@@ -52,7 +52,7 @@ class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
 
 class ClickWebhookView(PaymentMixin, BaseClickWebhookView):
     def successfully_payment(self, params, transaction):
-        self._update_order_status(transaction, "COMPLETED", params)
+        self._update_order_status(transaction, "PROCESSING", params)
 
     def cancelled_payment(self, params, transaction):
         self._update_order_status(transaction, "REJECTED", params)

@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpRequest
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 from .models import Room, Message
 from .serializer import RoomSerializer, MessageSerializer
@@ -35,3 +37,29 @@ class RoomViewSet(ModelViewSet):
 class MessageViewSet(ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    permission_classes=[IsAuthenticated]
+
+    def create(self, request:HttpRequest|Request, *args, **kwargs):
+        data=request.data
+        data["sender"]=request.user.id
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            message = serializer.save()
+            channel_layer = get_channel_layer()
+            room_id = message.room.id
+            async_to_sync(channel_layer.group_send)(
+                f'chat_{room_id}',
+                {
+                    "type": "chat_message",
+                    "message": {
+                        "id": str(message.id),
+                        "role": message.role,
+                        "sender": message.sender,
+                        "status": message.status,
+                        "content_type":"IMAGE",
+                        "image": request.build_absolute_uri(message.image.url) if message.image else ""
+                    }
+                },
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
