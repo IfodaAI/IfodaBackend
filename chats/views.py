@@ -54,7 +54,7 @@ class MessageViewSet(ModelViewSet):
                     "message": {
                         "id": str(message.id),
                         "role": message.role,
-                        "sender": message.sender,
+                        "sender": str(message.sender.id),
                         "status": message.status,
                         "content_type":"IMAGE",
                         "image": request.build_absolute_uri(message.image.url) if message.image else ""
