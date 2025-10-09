@@ -9,6 +9,10 @@ class DiseaseCategory(BaseModel):
 
     def __str__(self):
         return self.title
+    
+    # Prevents model from being displayed as "Product categorys" in admin panel
+    class Meta:
+        verbose_name_plural = "Disease Categories"
 
 
 class Disease(BaseModel):
