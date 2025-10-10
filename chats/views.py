@@ -39,39 +39,6 @@ class MessageViewSet(ModelViewSet):
     serializer_class = MessageSerializer
     permission_classes=[IsAuthenticated]
 
-    # def create(self, request:HttpRequest|Request, *args, **kwargs):
-    #     data = request.data.copy()
-    #     data["sender"]=request.user.id
-    #     serializer = self.get_serializer(data=data)
-    #     if serializer.is_valid():
-    #         message = serializer.save()
-    #         channel_layer = get_channel_layer()
-    #         room_id = message.room.id
-    #         data={
-    #                 "id": str(message.id),
-    #                 "role": message.role,
-    #                 "sender": str(message.sender.id),
-    #                 "status": message.status,
-    #                 "content_type":message.content_type,
-    #                 # "image": request.build_absolute_uri(message.image.url) if message.image else "",
-    #                 # "text":message.text,
-    #         }
-    #         if message.content_type=="IMAGE":
-    #             data["image"]=request.build_absolute_uri(message.image.url) if message.image else ""
-    #         elif message.content_type=="TEXT":
-    #             data["text"]=message.text
-    #         else:
-    #             data["diseases"]=[disease.name for disease in message.diseases.all()]
-    #             data["products"]=[str(product.id) for product in message.products.all()]
-    #         async_to_sync(channel_layer.group_send)(
-    #             f'chat_{room_id}',
-    #             {
-    #                 "type": "chat_message",
-    #                 "message": data
-    #             },
-    #         )
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def create(self, request: HttpRequest | Request, *args, **kwargs):
         data = request.data.copy()
         data["sender"] = request.user.id
