@@ -62,7 +62,7 @@ class MessageViewSet(ModelViewSet):
                 data["text"]=message.text
             else:
                 data["diseases"]=[disease.name for disease in message.diseases.all()]
-                data["products"]=[product.id for product in message.products.all()]
+                data["products"]=[str(product.id) for product in message.products.all()]
             async_to_sync(channel_layer.group_send)(
                 f'chat_{room_id}',
                 {
