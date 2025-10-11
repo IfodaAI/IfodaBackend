@@ -16,7 +16,7 @@ class RoomViewSet(ModelViewSet):
     permission_classes=[IsAuthenticated]
 
     def create(self, request:HttpRequest|Request, *args, **kwargs):
-        data=request.data
+        data=request.data.copy()
         data["owner"]=request.user.id
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
