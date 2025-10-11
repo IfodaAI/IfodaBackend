@@ -17,7 +17,7 @@ class RoomViewSet(ModelViewSet):
 
     def create(self, request:HttpRequest|Request, *args, **kwargs):
         data=request.data
-        data["owner"]=request.user.id
+        data["owner"]=self.request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
