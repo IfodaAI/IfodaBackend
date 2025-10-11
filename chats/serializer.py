@@ -5,7 +5,7 @@ from django.http import HttpRequest
 class RoomSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Room
-        depth=1
+        # depth=1
 
     def __init__(self, *args, **kwargs):
         super(RoomSerializer, self).__init__(*args, **kwargs)
