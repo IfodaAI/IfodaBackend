@@ -53,9 +53,9 @@ class Message(BaseModel):
         null=True,
     )
 
-    def save(self, force_insert = ..., force_update = ..., using = ..., update_fields = ...):
+    def save(self, *args, **kwargs):
         if self.sender and getattr(self.sender, "role", None) == "USER":
             self.role = "QUESTION"
         else:
             self.role = "ANSWER"
-        return super().save(force_insert, force_update, using, update_fields)
+        return super().save(*args, **kwargs)
