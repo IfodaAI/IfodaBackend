@@ -2,6 +2,7 @@ from utils.serializers import BaseModelSerializer
 from .models import Room, Message
 from django.http import HttpRequest
 from users.serializers import UserSerializer
+from rest_framework.serializers import SerializerMethodField
 
 class RoomSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
@@ -20,5 +21,12 @@ class RoomSerializer(BaseModelSerializer):
                 self.fields["owner"] = UserSerializer(context=self.context)
 
 class MessageSerializer(BaseModelSerializer):
+    diseases_names = SerializerMethodField(read_only=True)
+
     class Meta(BaseModelSerializer.Meta):
         model = Message
+        read_only_fields = ["diseases_names"]
+    
+    def get_diseases_names(self, obj):
+        # Disease modeli ichida 'name' maydoni bor deb faraz qilamiz
+        return list(obj.diseases.values_list("name", flat=True))
