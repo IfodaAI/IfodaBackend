@@ -36,7 +36,7 @@ class OrderViewSet(ModelViewSet):
         return payme.create_payment(
             id=data["id"],
             amount=data["amount"],
-            return_url="https://webapp.ifoda-shop.uz",
+            # return_url="https://webapp.ifoda-shop.uz",
         )
 
     def click_gen(self, data):
@@ -50,7 +50,7 @@ class OrderViewSet(ModelViewSet):
         return click.create_payment(
             id=data["id"],
             amount=data["amount"],
-            return_url="https://webapp.ifoda-shop.uz",
+            # return_url="https://webapp.ifoda-shop.uz",
             description="48273",
         )
 
