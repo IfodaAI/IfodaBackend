@@ -21,12 +21,12 @@ class RoomSerializer(BaseModelSerializer):
                 self.fields["owner"] = UserSerializer(context=self.context)
 
 class MessageSerializer(BaseModelSerializer):
-    diseases_names = SerializerMethodField(read_only=True)
+    diseases_info = SerializerMethodField(read_only=True)
 
     class Meta(BaseModelSerializer.Meta):
         model = Message
-        read_only_fields = ["diseases_names"]
+        read_only_fields = ["diseases_info"]
     
-    def get_diseases_names(self, obj):
-        # Disease modeli ichida 'name' maydoni bor deb faraz qilamiz
-        return list(obj.diseases.values_list("name", flat=True))
+    def get_diseases_info(self, obj):
+        # Disease modelida name va description maydonlari mavjud deb faraz qilamiz
+        return list(obj.diseases.values("name", "description"))
