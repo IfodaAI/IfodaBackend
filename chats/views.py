@@ -9,6 +9,7 @@ from channels.layers import get_channel_layer
 
 from .models import Room, Message
 from .serializer import RoomSerializer, MessageSerializer
+# from products.serializers import DiseaseSerializer
 
 class RoomViewSet(ModelViewSet):
     queryset = Room.objects.all()
@@ -63,7 +64,7 @@ class MessageViewSet(ModelViewSet):
         elif message.content_type == "TEXT":
             payload["text"] = message.text
         elif message.content_type == "PRODUCT":
-            payload["diseases"] = [d.name for d in message.diseases.all()]
+            payload["diseases"] = [{"name":d.name,"description":d.description} for d in message.diseases.all()]
             payload["products"] = [str(p.id) for p in message.products.all()]
 
         if room:
@@ -73,4 +74,56 @@ class MessageViewSet(ModelViewSet):
             )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-# +998932187393-
+
+# @csrf_exempt  # Only if you need to bypass CSRF protection
+# def ai_model_prediction(request):
+#     if request.method == 'POST':
+#         data = json.loads(request.body)
+#         order_id = data.get('order_id')
+#         order=Order.objects.get(id=order_id)
+#         last_message = order.messages.last()
+        
+#         # Extract just the path from the URL
+#         image_url = str(last_message.image_url)
+#         parsed_url = urlparse(image_url)
+#         relative_path  = parsed_url.path
+
+#         # Remove the /media/ prefix if it exists (since MEDIA_ROOT already includes this)
+#         if relative_path.startswith('/media/'):
+#             relative_path = relative_path[7:]  # Remove '/media/'
+        
+#         # Combine with MEDIA_ROOT to get the full system path
+#         full_image_path = os.path.join(django_settings.MEDIA_ROOT, relative_path)
+#         response=generate_prompt(full_image_path)
+#         if response:
+#             disease=Diseases.objects.filter(name__contains=response).first()
+#             # pill_ids listiga UUID lar string formatida saqlanadi
+#             pill_ids = [str(uuid_obj) for uuid_obj in disease.pills.values_list('id', flat=True)]
+#             return JsonResponse({
+#                 'success': True,
+#                 'pills': pill_ids,
+#                 'diseases': [disease.id],  # Optional
+#                 'order_id':order_id,
+#                 "response":response
+#             })
+#         # diseases = list(Diseases.objects.values_list("id", "name", "description"))
+#         # formatted_diseases = [f"{str(disease_id)}:{name}.{description}" for disease_id, name, description in diseases]
+#         # diseases=list(Diseases.objects.values("id", "name", "description"))
+        
+#         # Here you would call your AI model with the order information
+#         # This is a placeholder for your actual AI logic
+#         # Replace with your actual implementation
+        
+#         # Example response with pill IDs
+#         pill_ids = [1, 3, 5]  # Replace with your actual AI-predicted pill IDs
+#         disease_ids = [2, 4]  # Optional: disease IDs if your API returns these
+        
+#         return JsonResponse({
+#             'success': True,
+#             # 'pills': pill_ids,
+#             'diseases': disease_ids,  # Optional
+#             'order_id':order_id,
+#             "response":response
+#         })
+    
+#     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
