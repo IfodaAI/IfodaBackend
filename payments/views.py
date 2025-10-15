@@ -14,7 +14,7 @@ class PaymentMixin:
         order = Order.objects.get(id=transaction.account_id)
         order.status = status
         order.save()
-        if status=="":
+        if status=="PROCESSING":
             text = """To'lov muvaffaqiyatli amalga oshildi ✅
             Buyurtma 24 soat ichida yetkazib beriladi.
             Ishonchingiz uchun minnatdormiz
