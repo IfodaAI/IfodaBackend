@@ -17,6 +17,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # SECURITY WARNING: keep the secret key used in production secret!
 # Don't run with debug turned on in production!
 SECRET_KEY = env.str("SECRET_KEY")
+TELEGRAM_BOT_TOKEN = env.str("TELEGRAM_BOT_TOKEN")
 DEBUG = env.bool("DEBUG", default=False)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = [

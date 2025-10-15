@@ -4,7 +4,8 @@ from paytechuz.integrations.django.views import (
 )
 # from paytechuz.integrations.django.models import PaymentTransaction
 from orders.models import Order
-
+import requests
+from django.conf import settings
 
 class PaymentMixin:
     """Order status yangilash uchun umumiy metod."""
@@ -13,11 +14,24 @@ class PaymentMixin:
         order = Order.objects.get(id=transaction.account_id)
         order.status = status
         order.save()
-        # print(
-        #     f"Order {order.id} {status} — params: {params}, txn_id: {transaction.id}",
-        #     flush=True,
-        # )
-
+        if status=="":
+            text = """To'lov muvaffaqiyatli amalga oshildi ✅
+            Buyurtma 24 soat ichida yetkazib beriladi.
+            Ishonchingiz uchun minnatdormiz
+            IFODA kompaniyasini tanlaganingizdan mamnunmiz
+            Birgalikda yetishtiramiz!
+            ✅"""
+            try:
+                requests.post(
+                    url=f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage',
+                    data={
+                        'chat_id': order.user.telegram_id,
+                        'text': text,
+                        'parse_mode': 'HTML'
+                    }
+                ).json()
+            except Exception as e:
+                print('To\'lovda Telegramga xabar yuborishda xatolik yuz berdi: ', e)
 
 class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
     def before_check_perform_transaction(self, params, account):
