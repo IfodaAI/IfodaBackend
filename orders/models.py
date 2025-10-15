@@ -41,6 +41,9 @@ class Order(BaseModel):
     def __str__(self):
         return f"Order {self.id}"
 
+    class Meta:
+        ordering = ['-updated_date']
+
 
 class OrderItem(BaseModel):
     order = models.ForeignKey(
