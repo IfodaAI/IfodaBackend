@@ -240,3 +240,12 @@ PAYTECHUZ = {
         "IS_TEST_MODE": True,  # Ishlab chiqarishda False qiling
     },
 }
+
+
+# Django’ga SSL ni nginx orqali kelayotganini bildirish uchun
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Majburiy HTTPS yo‘nalish
+SECURE_SSL_REDIRECT = True  # (ixtiyoriy)
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
