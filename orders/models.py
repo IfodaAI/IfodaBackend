@@ -11,7 +11,7 @@ class Order(BaseModel):
     STATUS_CHOICES = [
         ("PENDING", "Pending"),
         ("PROCESSING", "Processing"),
-        ("IN_PAYMENT", "In payment"),
+        ("IN_TRANSIT", "In Transit"),
         ("COMPLETED", "Completed"),
         ("REJECTED", "Rejected"),
     ]
