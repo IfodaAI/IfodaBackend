@@ -86,3 +86,21 @@ class ProductImageViewSet(ModelViewSet):
     queryset = ProductImage.objects.all()
     serializer_class = ProductImageSerializer
     filterset_fields=["product"]
+from users.models import User,TelegramUser,Branch
+from orders.models import Order
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class StatisticsAPIView(APIView):
+    def get(self, request):
+        data = {
+            "users": User.objects.count(),
+            "telegram_users": TelegramUser.objects.count(),
+            "orders": Order.objects.count(),
+            "products": Product.objects.count(),
+            "product_skus": ProductSKU.objects.count(),
+            "diseases": Disease.objects.count(),
+            "branches": Branch.objects.count(),
+        }
+
+        return Response(data, status=200)
