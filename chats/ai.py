@@ -8,7 +8,7 @@ from products.models import Disease
 def generate_prompt(image_path):
     kasalliklar=list(Disease.objects.values_list("name",flat=True))
     client = genai.Client(
-        api_key="AIzaSyCpXk8qWREU3N3o7VPwhhKgcp5cR9w6Gw0",
+        api_key="AIzaSyBN2VdiUn4W2rJICGCzGeJy83pMwcXjdTE",
     )
 
     files = [
