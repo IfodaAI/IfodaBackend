@@ -31,7 +31,8 @@ class ProductSKUAdminClass(ModelAdmin):
 
 @admin.register(Product)
 class ProductAdminClass(ModelAdmin):
-    list_display = ["id", "name", "description", "category", "product_id"]
+    list_display = ["id", "name", "description", "category", "product_id"]\
+    search_fields=["name"]
     inlines = [ProductSKUInline, ProductImageInline]
 
 
