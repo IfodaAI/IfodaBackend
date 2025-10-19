@@ -112,3 +112,13 @@ class MessageViewSet(ModelViewSet):
             )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+"""
+class TriggerNotification(APIView):
+    def post(self, request):
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "notifications", {"type": "notify", "message": {"message": "Yangi bildirishnoma qabul qilindi!"}}
+        )
+        return Response({"status": "sent"})
+"""

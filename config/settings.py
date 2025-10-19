@@ -1,29 +1,28 @@
 import os
-import environ
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
-env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Don't run with debug turned on in production!
-SECRET_KEY = env.str("SECRET_KEY")
-TELEGRAM_BOT_TOKEN = env.str("TELEGRAM_BOT_TOKEN")
-DEBUG = env.bool("DEBUG", default=False)
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+SECRET_KEY = os.getenv("SECRET_KEY")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 CSRF_TRUSTED_ORIGINS = [
     "https://api.ifoda-shop.uz",
 ]
-CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
 # Application definition
 
@@ -223,22 +222,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 PAYTECHUZ = {
     "PAYME": {
-        "PAYME_ID": "6881b7acd5ee42a97c8b6eff",
-        "PAYME_KEY": "HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?",  #'WcXfTV&otM3XbTiNfzSYrj66RtvFrBK8oh%b',
-        "ACCOUNT_MODEL": "orders.models.Order",  # For example: 'orders.models.Order'
+        "PAYME_ID": os.getenv("PAYME_ID"),
+        "PAYME_KEY": os.getenv("PAYME_KEY"),
+        "ACCOUNT_MODEL": "orders.models.Order",
         "ACCOUNT_FIELD": "order_id",
         "AMOUNT_FIELD": "amount",
-        "IS_TEST_MODE": False,  # Ishlab chiqarishda False qiling
+        "IS_TEST_MODE": os.getenv("PAYME_TEST_MODE", "False").lower() == "true",
     },
     "CLICK": {
-        "SERVICE_ID": "79480",
-        "MERCHANT_ID": "30842",
-        "MERCHANT_USER_ID": "48273",
-        "SECRET_KEY": "KbcSKFP7TDVe",
-        "ACCOUNT_MODEL": "orders.models.Order",  # For example: 'orders.models.Order'
+        "SERVICE_ID": os.getenv("CLICK_SERVICE_ID"),
+        "MERCHANT_ID": os.getenv("CLICK_MERCHANT_ID"),
+        "MERCHANT_USER_ID": os.getenv("CLICK_MERCHANT_USER_ID"),
+        "SECRET_KEY": os.getenv("CLICK_SECRET_KEY"),
+        "ACCOUNT_MODEL": "orders.models.Order",
         "ACCOUNT_FIELD": "order_id",
         "COMMISSION_PERCENT": 0.0,
-        "IS_TEST_MODE": True,  # Ishlab chiqarishda False qiling
+        "IS_TEST_MODE": os.getenv("CLICK_TEST_MODE", "False").lower() == "true",
     },
 }
 
