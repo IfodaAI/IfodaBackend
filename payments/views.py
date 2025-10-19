@@ -16,10 +16,10 @@ class PaymentMixin:
         order.save()
         if status=="PROCESSING":
             text = """To'lov muvaffaqiyatli amalga oshildi ✅
-        Buyurtma 24 soat ichida yetkazib beriladi.
-        Ishonchingiz uchun minnatdormiz
-        IFODA kompaniyasini tanlaganingizdan mamnunmiz
-        Birgalikda yetishtiramiz!✅"""
+    Buyurtma 24 soat ichida yetkazib beriladi.
+    Ishonchingiz uchun minnatdormiz
+    IFODA kompaniyasini tanlaganingizdan mamnunmiz
+    Birgalikda yetishtiramiz!✅"""
             try:
                 requests.post(
                     url=f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage',
