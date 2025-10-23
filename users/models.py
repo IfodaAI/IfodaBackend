@@ -46,7 +46,7 @@ class TelegramUser(BaseModel):
         blank=True,
         null=True,
     )
-    username = models.CharField(max_length=32, blank=True, null=True, unique=True)
+    username = models.CharField(max_length=32, blank=True, null=True)
     first_name = models.CharField(max_length=64, blank=True, null=True)
     last_name = models.CharField(max_length=64, blank=True, null=True)
     region = models.ForeignKey("Region", on_delete=models.SET_NULL, blank=True, null=True)
@@ -56,7 +56,7 @@ class TelegramUser(BaseModel):
     phone_number = PhoneNumberField(unique=True, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.username|self.first_name}"
+        return f"{self.first_name}"
 
 
 class Branch(BaseModel):

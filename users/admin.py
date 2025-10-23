@@ -25,7 +25,7 @@ class UserAdminClass(ModelAdmin):
 
 @admin.register(TelegramUser)
 class TelegramUserAdminClass(ModelAdmin):
-    list_display = ["id", "full_name", "username", "phone_number"]
+    list_display = ["id", "full_name", "phone_number"]
 
     def full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
