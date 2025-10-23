@@ -56,7 +56,7 @@ class TelegramUser(BaseModel):
     phone_number = PhoneNumberField(unique=True, blank=True, null=True)
 
     def __str__(self):
-        return self.username
+        return f"{self.username|self.first_name}"
 
 
 class Branch(BaseModel):
