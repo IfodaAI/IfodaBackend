@@ -43,4 +43,5 @@ jobs:
           sudo supervisorctl reread
           sudo supervisorctl update
           sudo supervisorctl restart IfodaBackend
+          sudo supervisorctl restart IfodaBot
           sudo systemctl restart nginx
