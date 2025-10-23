@@ -67,3 +67,4 @@ staticfiles/
 # Docker
 docker-compose.override.yml
 *.pid
+bot.log
