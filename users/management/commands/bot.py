@@ -51,7 +51,7 @@ async def contact_handler(message: types.Message):
         user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
             telegram_id=str(message.from_user.id),
             defaults={
-                "phone": contact.phone_number,
+                "phone_number": contact.phone_number,
                 "first_name": contact.first_name or message.from_user.first_name,
             },
         )
@@ -86,15 +86,15 @@ async def manual_registration(message: types.Message):
 @dp.message(lambda msg: msg.text and msg.text.startswith("+998"))
 async def handle_phone_manual(message: types.Message):
     try:
-        phone = message.text.strip()
-        if len(phone) != 13:
+        phone_number = message.text.strip()
+        if len(phone_number) != 13:
             await message.answer("Noto'g'ri format. Iltimos, raqamni +998901234567 formatida kiriting")
             return
 
         user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
             telegram_id=str(message.from_user.id),
             defaults={
-                "phone": phone,
+                "phone_number": phone_number,
                 "first_name": message.from_user.first_name,
             },
         )

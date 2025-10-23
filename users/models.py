@@ -58,7 +58,6 @@ class TelegramUser(BaseModel):
     def __str__(self):
         return f"{self.first_name}"
 
-
 class Branch(BaseModel):
     brainch_id = models.BigIntegerField(
         unique=True
