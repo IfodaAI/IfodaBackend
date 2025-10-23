@@ -1,4 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
+from products.filters import ProductSKUFilter
 from users.models import User,TelegramUser,Branch
 from orders.models import Order
 from rest_framework.views import APIView
@@ -68,7 +69,8 @@ class ProductViewSet(ModelViewSet):
 class ProductSKUViewSet(ModelViewSet):
     queryset = ProductSKU.objects.all()
     serializer_class = ProductSKUSerializer
-    filterset_fields=["product"]
+    # filterset_fields=["product"]
+    filterset_class = ProductSKUFilter
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -87,6 +89,7 @@ class ProductSKUViewSet(ModelViewSet):
             queryset = queryset.filter(id__in=ids_list)
 
         return queryset
+
 class ProductImageViewSet(ModelViewSet):
     queryset = ProductImage.objects.all()
     serializer_class = ProductImageSerializer
