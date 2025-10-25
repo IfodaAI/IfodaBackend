@@ -44,7 +44,7 @@ async def start_handler(message: types.Message):
         )
         # Remove previous keyboard and send new message
         await message.answer(
-            f"*Xush kelibsiz qayta, {user.first_name}!*\nIlovani ishlatishingiz mumkin:",
+            f"*Xush kelibsiz, {user.first_name}!*\nIlovani ishlatishingiz mumkin:",
             reply_markup=types.ReplyKeyboardRemove(),  # Remove keyboard
             parse_mode=ParseMode.MARKDOWN
         )
