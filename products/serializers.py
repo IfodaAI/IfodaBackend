@@ -74,10 +74,23 @@ class ProductSerializer(BaseModelSerializer):
         if category == "true":
             self.fields["category"] = ProductSubcategorySerializer(context=self.context)
 
+# class ProductSKUSerializer(BaseModelSerializer):
+#     class Meta(BaseModelSerializer.Meta):
+#         model = ProductSKU
+#         depth=1
 class ProductSKUSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductSKU
-        depth=1
+        depth = 0  # default chuqurlik
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+
+        if request and request.method == "GET":
+            self.Meta.depth = 1
+        else:
+            self.Meta.depth = 0
 
 class ProductImageSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
