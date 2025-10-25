@@ -28,21 +28,41 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def start_handler(message: types.Message):
-    keyboard = ReplyKeyboardMarkup(
-        keyboard=[
-            [
-                KeyboardButton(text="Raqamni ulashish 📞", request_contact=True),
-                KeyboardButton(text="Qo'lda kiritish ✍️"),
+    # Check if user already exists
+    user = await sync_to_async(TelegramUser.objects.filter(telegram_id=str(message.from_user.id)).first)()
+    
+    if user:
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="🏪 Ifoda Shop'ni ochish", 
+                        web_app=WebAppInfo(url=settings.WEBAPP_URL)
+                    )
+                ]
             ]
-        ],
-        resize_keyboard=True,
-        one_time_keyboard=True
-    )
-    await message.answer(
-        "*Ifoda Shop*ga xush kelibsiz!\nIltimos, telefon raqamingizni ulashing yoki qo'lda kiriting:", 
-        reply_markup=keyboard,
-        parse_mode=ParseMode.MARKDOWN
-    )
+        )
+        await message.answer(
+            f"*Xush kelibsiz qayta, {user.first_name}!*\nIlovani ishlatishingiz mumkin:",
+            reply_markup=keyboard,
+            parse_mode=ParseMode.MARKDOWN
+        )
+    else:
+        keyboard = ReplyKeyboardMarkup(
+            keyboard=[
+                [
+                    KeyboardButton(text="Raqamni ulashish 📞", request_contact=True),
+                    KeyboardButton(text="Qo'lda kiritish ✍️"),
+                ]
+            ],
+            resize_keyboard=True,
+            one_time_keyboard=True
+        )
+        await message.answer(
+            "*Ifoda Shop*ga xush kelibsiz!\nIltimos, telefon raqamingizni ulashing yoki qo'lda kiriting:", 
+            reply_markup=keyboard,
+            parse_mode=ParseMode.MARKDOWN
+        )
 
 @dp.message(lambda msg: msg.contact is not None)
 async def contact_handler(message: types.Message):
