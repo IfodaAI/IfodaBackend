@@ -18,7 +18,7 @@ class DiseaseCategory(BaseModel):
 class Disease(BaseModel):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    product = models.ManyToManyField("ProductSKU")
+    product = models.ManyToManyField("ProductSKU",blank=True)
     category = models.ForeignKey(
         DiseaseCategory,
         on_delete=models.SET_NULL,

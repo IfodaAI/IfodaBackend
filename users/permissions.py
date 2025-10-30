@@ -1,6 +1,5 @@
 from rest_framework.permissions import BasePermission
 
-
 class PostAndCheckUserOnly(BasePermission):
     """
     Faqat:
@@ -15,7 +14,7 @@ class PostAndCheckUserOnly(BasePermission):
             return request.method == "GET"
 
         # Faqat POST ga ruxsat
-        if request.method in ["POST","PATCH"]:
+        if request.method in ["POST", "PATCH"]:
             return True
 
         # Qolgan hamma deny
