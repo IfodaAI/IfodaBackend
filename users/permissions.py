@@ -15,7 +15,7 @@ class PostAndCheckUserOnly(BasePermission):
             return request.method == "GET"
 
         # Faqat POST ga ruxsat
-        if request.method == "POST":
+        if request.method in ["POST","PATCH"]:
             return True
 
         # Qolgan hamma deny
