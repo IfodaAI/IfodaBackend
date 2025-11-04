@@ -158,7 +158,7 @@ class MessageViewSet(ModelViewSet):
                         "description": product.description,
                         "spic": product.spic,
                         "package_code": product.package_code,
-                        "category": product.category.name if product.category else None,
+                        "category": product.category.title if product.category else None,
                         "image_thumbnail": (
                             request.build_absolute_uri(product.image_thumbnail.url)
                             if product.image_thumbnail else None
