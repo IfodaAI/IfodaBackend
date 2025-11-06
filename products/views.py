@@ -4,6 +4,7 @@ from orders.models import Order
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
+from django.db.models import Q
 
 from .models import (
     Disease,
@@ -49,7 +50,9 @@ class ProductViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         name=request.GET.get("name")
         if name:
-            queryset=queryset.filter(name__icontains=name)
+            queryset = queryset.filter(
+                Q(name__icontains=name) | Q(description__icontains=name)
+            )
         category=request.GET.get("category")
         if category:
             queryset=queryset.filter(category__category__id=category)
