@@ -23,6 +23,7 @@ urlpatterns = [
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
+    path("ckeditor/", include("ckeditor_uploader.urls")),
 ]
 
 if settings.DEBUG:

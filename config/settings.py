@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "channels",
     "corsheaders",
     "imagekit",
+    "ckeditor",
+    "ckeditor_uploader",
     # Local apps
     "users",
     "products",
@@ -263,4 +265,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True  # (ixtiyoriy)
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
 # DEBUG=True

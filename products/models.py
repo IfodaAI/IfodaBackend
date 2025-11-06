@@ -1,7 +1,7 @@
 from django.db import models
 from utils.models import BaseModel
 from imagekit.models import ProcessedImageField
-
+from ckeditor_uploader.fields import RichTextUploadingField
 
 class DiseaseCategory(BaseModel):
     title = models.CharField(max_length=255)
@@ -67,7 +67,8 @@ class Product(BaseModel):
         unique=True
     )  # This field is used to integrate with LOGIX system.
     name = models.CharField(max_length=50)
-    description = models.TextField()
+    # description = models.TextField()
+    description = RichTextUploadingField(blank=True, null=True)
     spic = models.CharField(max_length=50)
     package_code = models.CharField(max_length=50)
     category = models.ForeignKey(
