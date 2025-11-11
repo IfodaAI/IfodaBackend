@@ -97,67 +97,22 @@ class MessageViewSet(ModelViewSet):
             "content_type": message.content_type,
         }
 
-        # 🖼 IMAGE turi
         if message.content_type == "IMAGE":
             payload["image"] = request.build_absolute_uri(message.image.url) if message.image else ""
-
-        # 💬 TEXT turi
         elif message.content_type == "TEXT":
             payload["text"] = message.text
-
-        # 🛍 PRODUCT turi
         elif message.content_type == "PRODUCT":
-            # Kasalliklar (agar mavjud bo‘lsa)
-            payload["diseases"] = [
-                {"name": d.name, "description": d.description}
-                for d in message.diseases.all()
-            ]
+            payload["diseases"] = [{"name":d.name,"description":d.description} for d in message.diseases.all()]
+            payload["products"] = [str(p.id) for p in message.products.all()]
 
-            # 🧩 ProductSKU larni Product bo‘yicha guruhlash
-            product_dict = {}
-
-            for sku in message.products.select_related("product", "product__category").all():
-                product = sku.product
-                if not product:
-                    continue
-
-                pid = str(product.id)
-
-                if pid not in product_dict:
-                    product_dict[pid] = {
-                        "product_id": str(product.product_id) if product.product_id else None,
-                        "name": product.name,
-                        "description": product.description,
-                        "spic": product.spic,
-                        "package_code": product.package_code,
-                        "category": product.category.title if product.category else None,
-                        "image_thumbnail": (
-                            request.build_absolute_uri(product.image_thumbnail.url)
-                            if product.image_thumbnail else None
-                        ),
-                        "skus": []
-                    }
-
-                product_dict[pid]["skus"].append({
-                    "id": str(sku.id),
-                    "quantity": sku.quantity,
-                    "price": sku.price,
-                    "unit": sku.unit,
-                    "is_small_package": sku.is_small_package,
-                })
-
-            payload["products"] = list(product_dict.values())
-
-        # 🔄 WebSocket xabari
         if room:
             async_to_sync(channel_layer.group_send)(
-                f"chat_{room.id}",
+                f'chat_{room.id}',
                 {"type": "chat_message", "message": payload},
             )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
+    
 """
 class TriggerNotification(APIView):
     def post(self, request):

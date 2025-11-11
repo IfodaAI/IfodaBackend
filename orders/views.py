@@ -16,11 +16,9 @@ from .permissions import OrderPermission
 
 from utils.utils import get_distance_from_lat_lon_in_km
 
-
 class DeliveryViewset(ModelViewSet):
     queryset = Delivery.objects.all()
     serializer_class = DeliverySerializer
-
 
 class OrderViewSet(ModelViewSet):
     queryset = Order.objects.all()
@@ -143,7 +141,6 @@ class OrderViewSet(ModelViewSet):
         if user.role == "DISPATCHER":
             raise PermissionDenied("Dispatchers are read-only.")
         serializer.save()
-
 
 class OrderItemsViewSet(ModelViewSet):
     queryset = OrderItem.objects.all()
