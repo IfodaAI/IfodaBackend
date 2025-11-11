@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 from utils.models import BaseModel
-from products.models import Disease,ProductSKU
+from products.models import Disease,Product
 
 User = get_user_model()
 
@@ -44,7 +44,7 @@ class Message(BaseModel):
     text = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to="messages/", blank=True, null=True)
     diseases = models.ManyToManyField(Disease, related_name="messages", blank=True)
-    products = models.ManyToManyField(ProductSKU, related_name="messages", blank=True)
+    products = models.ManyToManyField(Product, related_name="messages", blank=True)
     sender = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
