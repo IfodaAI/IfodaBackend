@@ -13,6 +13,7 @@ from products.models import ProductSKU
 from .models import Order, OrderItem, Delivery
 from .serializers import OrderSerializer, OrderItemSerializer, DeliverySerializer
 from .permissions import OrderPermission
+from django.conf import settings
 
 from utils.utils import get_distance_from_lat_lon_in_km
 
@@ -25,122 +26,106 @@ class OrderViewSet(ModelViewSet):
     permission_classes = [OrderPermission]
     serializer_class = OrderSerializer
 
-    def payme_gen(self, data):
-        payme = PaymeGateway(
-            payme_id="6881b7acd5ee42a97c8b6eff",
-            payme_key="HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?",  # "HJX&ESmd&ZJbZgGjuYii0uXMePcuuoHSVBN?",
-            is_test_mode=False,
-        )
-        return payme.create_payment(
-            id=data["id"],
-            amount=data["amount"]
-        )
+    # ✅ Yagona payment generator
+    def generate_payment_link(self, gateway_name, data):
+        cfg = settings.PAYTECHUZ[gateway_name.upper()]
 
-    def click_gen(self, data):
-        click = ClickGateway(
-            service_id="79480",
-            merchant_id="30842",
-            merchant_user_id="48273",
-            secret_key="KbcSKFP7TDVe",
-            is_test_mode=False,
-        )
-        return click.create_payment(
-            id=data["id"],
-            amount=data["amount"],
-            # return_url="https://webapp.ifoda-shop.uz",
-            description="48273",
-        )
+        if gateway_name == "payme":
+            gateway = PaymeGateway(
+                payme_id=cfg["PAYME_ID"],
+                payme_key=cfg["PAYME_KEY"],
+                is_test_mode=cfg["IS_TEST_MODE"],
+            )
+            return gateway.create_payment(id=data["id"], amount=data["amount"])
 
-    def create(self, request: HttpRequest | Request, *args, **kwargs):
-        # data split
+        elif gateway_name == "click":
+            gateway = ClickGateway(
+                service_id=cfg["SERVICE_ID"],
+                merchant_id=cfg["MERCHANT_ID"],
+                merchant_user_id=cfg["MERCHANT_USER_ID"],
+                secret_key=cfg["SECRET_KEY"],
+                is_test_mode=cfg["IS_TEST_MODE"],
+            )
+            return gateway.create_payment(
+                id=data["id"], amount=data["amount"], description=str(data["MERCHANT_USER_ID"])
+            )
+
+        raise ValueError(f"Unknown payment method: {gateway_name}")
+
+    def create(self, request: HttpRequest, *args, **kwargs):
         data = {}
-        items = request.data.pop("items")
-        order: dict = request.data.pop("order")
-        branch = order.get("branch")
-        if branch:
-            branch = Branch.objects.get(id=branch)
-            order["delivery_latitude"] = branch.latitude
-            order["delivery_longitude"] = branch.longitude
+        items = request.data.pop("items", [])
+        order_data = request.data.pop("order", {})
+
+        # ✅ Branch aniqlash
+        branch_id = order_data.get("branch")
+        if branch_id:
+            branch = Branch.objects.get(id=branch_id)
+            order_data["delivery_latitude"] = branch.latitude
+            order_data["delivery_longitude"] = branch.longitude
         else:
-            user_latitude = float(order.get("delivery_latitude"))
-            user_longitude = float(order.get("delivery_longitude"))
-            payment_method = order.pop("payment_method")
-            branches = []
-            for branch in Branch.objects.all():
-                distance = get_distance_from_lat_lon_in_km(
-                    user_latitude, user_longitude, branch.latitude, branch.longitude
-                )
-                branches.append(
-                    {
-                        "id": branch.id,
-                        "distance": round(distance, 2),
-                    }
-                )
+            user_lat = float(order_data.get("delivery_latitude"))
+            user_lon = float(order_data.get("delivery_longitude"))
+            payment_method = order_data.get("payment_method")
 
-            # Masofaga qarab saralash va 10 ta eng yaqinini olish
-            order["branch"] = sorted(branches, key=lambda x: x["distance"])[0]["id"]
+            nearest_branch = min(
+                Branch.objects.all(),
+                key=lambda b: get_distance_from_lat_lon_in_km(
+                    user_lat, user_lon, b.latitude, b.longitude
+                ),
+            )
+            order_data["branch"] = nearest_branch.id
 
-        # order create
-        amount = 0
-        order["user"] = request.user.id
-        serializer = self.get_serializer(data=order)
+        # ✅ Order yaratish
+        order_data["user"] = request.user.id
+        serializer = self.get_serializer(data=order_data)
         serializer.is_valid(raise_exception=True)
-        order = self.perform_create(serializer)
+        order = serializer.save()
 
-        # item create
+        # ✅ Itemlar yaratish va summani hisoblash
+        total_amount = 0
         for item in items:
-            item["product"] = ProductSKU.objects.get(id=item["product"])
-            order_item = OrderItem(order=order, **item)
+            product = ProductSKU.objects.get(id=item["product"])
+            order_item = OrderItem(order=order, product=product, **item)
             order_item.save()
-            amount += order_item.price
+            total_amount += order_item.price
 
-        # amount change
-        order.amount = amount
-        order.save()
-        if order.delivery_method == "DELIVERY":
-            if payment_method == "payme":
-                payment_link = self.payme_gen(serializer.data)
-            else:
-                payment_link = self.click_gen(serializer.data)
+        # ✅ Yakuniy summa
+        order.amount = total_amount
+        order.save(update_fields=["amount"])
+
+        # ✅ To‘lov havolasi
+        payment_link = None
+        payment_method = order_data.get("payment_method")
+        if order.delivery_method == "DELIVERY" and payment_method in ("payme", "click"):
+            payment_link = self.generate_payment_link(payment_method, serializer.data)
+
+        data["order"] = serializer.data
+        if payment_link:
             data["payment_link"] = payment_link
 
-        headers = self.get_success_headers(serializer.data)
-        data["order"] = serializer.data
-        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(data, status=status.HTTP_201_CREATED)
 
-    def perform_create(self, serializer):
-        return serializer.save()
+    def perform_update(self, serializer):
+        user = self.request.user
+        order = self.get_object()
+
+        if user.role == "MANAGER" and order.branch_id != user.branch_id:
+            raise PermissionDenied("Siz faqat o‘z filialingizdagi buyurtmalarni tahrirlashingiz mumkin.")
+        if user.role == "DISPATCHER":
+            raise PermissionDenied("Dispetcherlar uchun faqat o‘qish huquqi bor.")
+        serializer.save()
 
     def get_queryset(self):
         user = self.request.user
 
-        # If user's role is admin, send all orders
         if user.is_superuser or user.role == "ADMIN":
             return Order.objects.all()
-
-        # If user's role is manager, send only orders assigned to their branch.
         if user.role == "MANAGER":
             return Order.objects.filter(branch_id=user.branch_id)
-
-        # If user's role is dispatcher, send all orders (read-only enforced by permission)
         if user.role == "DISPATCHER":
             return Order.objects.all()
-
-        # If it's normal user, send only only their own orders.
         return Order.objects.filter(user=user)
-
-    def perform_update(self, serializer):
-        # extra safety: prevent manager updating orders of other branches
-        user = self.request.user
-        order = self.get_object()
-        if user.role == "MANAGER" and order.branch_id != user.branch_id:
-            raise PermissionDenied("You can only update orders for your branch.")
-
-        # Dispatcher shouldn't reach here because permission blocks non-safe methods,
-        # but extra protection is okay
-        if user.role == "DISPATCHER":
-            raise PermissionDenied("Dispatchers are read-only.")
-        serializer.save()
 
 class OrderItemsViewSet(ModelViewSet):
     queryset = OrderItem.objects.all()
