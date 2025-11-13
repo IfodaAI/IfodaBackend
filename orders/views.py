@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -51,6 +52,20 @@ class OrderViewSet(ModelViewSet):
             )
 
         raise ValueError(f"Unknown payment method: {gateway_name}")
+
+    @action(detail=True, methods=['get'])
+    def payment_link(self, request:Request|HttpRequest, pk=None):
+        order = self.get_object()
+        # ✅ To‘lov havolasi
+        payment_method = request.GET.get("payment_method")
+        if order.delivery_method == "DELIVERY" and payment_method in ("payme", "click"):
+            payment_link = self.generate_payment_link(payment_method, order)
+            if payment_link:
+                return Response(payment_link)
+        return Response(
+                {"detail": f"To'lov havolasini generatsiya qilishda xatolik."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def create(self, request: HttpRequest, *args, **kwargs):
         data = {}
