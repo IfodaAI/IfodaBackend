@@ -101,7 +101,7 @@ class OrderViewSet(ModelViewSet):
         total_amount = 0
         for item in items:
             product = ProductSKU.objects.get(id=item["product"])
-            order_item = OrderItem(order=order, product=product, **item)
+            order_item = OrderItem(order=order, product=product, quantity=item["quantity"])
             order_item.save()
             total_amount += order_item.price
 
