@@ -48,7 +48,7 @@ class OrderViewSet(ModelViewSet):
                 is_test_mode=cfg["IS_TEST_MODE"],
             )
             return gateway.create_payment(
-                id=data["id"], amount=data["amount"], description=str(data["MERCHANT_USER_ID"])
+                id=data["id"], amount=data["amount"], description=str(cfg["MERCHANT_USER_ID"])
             )
 
         raise ValueError(f"Unknown payment method: {gateway_name}")
@@ -59,7 +59,7 @@ class OrderViewSet(ModelViewSet):
         # ✅ To‘lov havolasi
         payment_method = request.GET.get("payment_method")
         if order.delivery_method == "DELIVERY" and payment_method in ("payme", "click"):
-            payment_link = self.generate_payment_link(payment_method, order)
+            payment_link = self.generate_payment_link(payment_method, {"id":order.id,"amount":order.amount})
             if payment_link:
                 return Response(payment_link)
         return Response(
