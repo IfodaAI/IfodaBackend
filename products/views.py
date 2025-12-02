@@ -45,6 +45,24 @@ class ProductSubcategoryViewSet(ModelViewSet):
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        ids = self.request.query_params.get("ids")
+
+        if ids:
+            # ids=[1,2,3] yoki ids=1,2,3 formatda kelsa ham ishlaydi
+            import json
+            try:
+                # Agar format ids=[1,2,3] bo‘lsa
+                ids_list = json.loads(ids)
+            except json.JSONDecodeError:
+                # Agar format ids=1,2,3 bo‘lsa
+                ids_list = ids.split(",")
+
+            queryset = queryset.filter(id__in=ids_list)
+
+        return queryset
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
