@@ -29,6 +29,23 @@ class DiseaseViewSet(ModelViewSet):
     queryset = Disease.objects.all()
     serializer_class = DiseaseSerializer
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        name=request.GET.get("name")
+        if name:
+            queryset = queryset.filter(
+                Q(name__icontains=name) | Q(description__icontains=name)
+            )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
 class DiseaseCategoryViewSet(ModelViewSet):
     queryset = DiseaseCategory.objects.all()
     serializer_class = DiseaseCategorySerializer
