@@ -6,6 +6,9 @@ from rest_framework import serializers
 
 class OrderSerializer(BaseModelSerializer):
     user_fullname = serializers.SerializerMethodField()
+    payment_gateway = serializers.SerializerMethodField()
+    branch_name = serializers.SerializerMethodField()
+
     class Meta(BaseModelSerializer.Meta):
         model = Order
     
@@ -16,6 +19,14 @@ class OrderSerializer(BaseModelSerializer):
                 return obj.user.get_full_name()
             # fallback
             return f"{obj.user.first_name} {obj.user.last_name}".strip()
+        return None
+    
+    def get_payment_gateway(self, obj):
+        return obj.get_payment_gateway
+    
+    def get_branch_name(self, obj):
+        if obj.branch:
+            return obj.branch.name
         return None
 
     def __init__(self, *args, **kwargs):

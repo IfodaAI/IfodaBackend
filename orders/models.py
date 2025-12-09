@@ -40,6 +40,14 @@ class Order(BaseModel):
 
     def __str__(self):
         return f"Order {self.id}"
+    
+    @property
+    def get_payment_gateway(self):
+        from paytechuz.integrations.django.models import PaymentTransaction
+        payment_transactions=PaymentTransaction.objects.filter(account_id=self.id)
+        if payment_transactions:
+            return payment_transactions.last().gateway
+        return None
 
     class Meta:
         ordering = ['-updated_date']
