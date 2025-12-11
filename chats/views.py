@@ -62,7 +62,7 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from django.db.models import Subquery, OuterRef, DateTimeField
+from django.db.models import Subquery, OuterRef, DateTimeField, F
 from django.http import HttpRequest
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
