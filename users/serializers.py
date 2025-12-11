@@ -16,6 +16,8 @@ class UserSerializer(BaseModelSerializer):
             "last_name",
             "is_active",
             "role",
+            "created_date",
+            "state"
         )  # You cannot use __all__ because otherwise serializer will send user's password upon GET request as well.
 
 
