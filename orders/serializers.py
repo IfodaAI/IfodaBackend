@@ -37,7 +37,6 @@ class OrderSerializer(BaseModelSerializer):
             if order_items == "true":
                 self.fields["order_items"] = OrderItemSerializer(context=self.context,many=True)
 
-
 class OrderItemSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = OrderItem
