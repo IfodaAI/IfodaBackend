@@ -41,11 +41,13 @@ class RoomViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        last_message_sub = Message.objects.filter(room=OuterRef("pk")).order_by("-created_at")
+        last_message_sub = Message.objects.filter(
+            room=OuterRef("pk")
+        ).order_by("-created_date")
 
         qs = Room.objects.annotate(
             last_message_time=Subquery(
-                last_message_sub.values("created_at")[:1],
+                last_message_sub.values("created_date")[:1],
                 output_field=DateTimeField()
             )
         ).select_related("owner").order_by("-last_message_time")
