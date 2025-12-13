@@ -23,7 +23,7 @@ admin.site.unregister(Group)
 #     def full_name(self, obj):
 #         return f"{obj.first_name} {obj.last_name}"
 @admin.register(User)
-class UserAdminClass(UserAdmin):
+class UserAdminClass(UserAdmin,ModelAdmin):
     model = User
 
     list_display = (
