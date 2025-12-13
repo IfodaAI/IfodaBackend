@@ -1,11 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
-
 from utils.models import BaseModel
-
 from .managers import UserManager
-
 
 class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
@@ -35,7 +32,6 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.first_name + self.last_name if self.first_name or self.last_name else self.phone_number}"
-
 
 class TelegramUser(BaseModel):
     telegram_id = models.BigIntegerField(unique=True)
