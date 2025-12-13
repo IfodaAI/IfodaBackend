@@ -137,7 +137,7 @@ class OrderViewSet(ModelViewSet):
         if user.is_superuser or user.role == "ADMIN":
             return Order.objects.all()
         if user.role == "MANAGER":
-            return Order.objects.filter(branch_id=user.branch_id)
+            return Order.objects.filter(branch=user.branch)
         if user.role == "DISPATCHER":
             return Order.objects.all()
         return Order.objects.filter(user=user)

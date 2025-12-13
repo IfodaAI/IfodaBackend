@@ -58,8 +58,8 @@ class Branch(BaseModel):
     brainch_id = models.BigIntegerField(
         unique=True
     )  # This field is used to integrate with LOGIX system.
-    manager = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="branches"
+    manager = models.OneToOneField(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="branch"
     )
     name = models.CharField(max_length=255)
     latitude = models.FloatField()
