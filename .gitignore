@@ -1,5 +1,7 @@
 index.html
 main.py
+backup.json
+diseases.json
 *.log
 *.pot
 *.pyc
