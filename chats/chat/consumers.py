@@ -1,7 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from .models import Room, Message
+from chats.models import Room, Message
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -71,7 +71,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             sender=sender,
         )
     
-"""
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.group_name = "notifications"
@@ -84,4 +83,3 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def notify(self, event):
         message = event.get("message", True)
         await self.send(text_data=json.dumps({"message": message}))
-"""
