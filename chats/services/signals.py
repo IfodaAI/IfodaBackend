@@ -23,8 +23,7 @@ def message_created_notify(sender, instance: Message, created, **kwargs):
         "notifications",
         {
             "type": "notify",
-            "message": {"message": "Yangi bildirishnoma qabul qilindi!"\
-                        f"https://admin.ifoda-shop.uz/chats/{instance.id}"},
+            "message": {"message": "Yangi bildirishnoma qabul qilindi!"},
         },
     )
 
@@ -33,5 +32,6 @@ def message_created_notify(sender, instance: Message, created, **kwargs):
 
     send_telegram_message(
         chat_id=TELEGRAM_CHAT_ID,
-        text="🔔 Yangi savol keldi!"
+        text="🔔 Yangi bildirishnoma qabul qilindi!"\
+             f"https://admin.ifoda-shop.uz/chats/{instance.id}"
     )
