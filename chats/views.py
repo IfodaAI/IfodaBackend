@@ -10,7 +10,6 @@ from channels.layers import get_channel_layer
 
 from .models import Room, Message
 from .serializer import RoomSerializer, MessageSerializer
-from chats.services.telegram import send_telegram_message
 
 class RoomViewSet(ModelViewSet):
     queryset = Room.objects.all()
@@ -88,9 +87,4 @@ class MessageViewSet(ModelViewSet):
                 f'chat_{room.id}',
                 {"type": "chat_message", "message": payload},
             )
-        # async_to_sync(channel_layer.group_send)(
-        #     "notifications", {"type": "notify", "message": {"message": "Yangi bildirishnoma qabul qilindi!"}}
-        # )
-        # TODO
-        send_telegram_message(chat_id="1330892088",text="🔔 Yangi bildirishnoma qabul qilindi!")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
