@@ -23,12 +23,13 @@ def message_created_notify(sender, instance: Message, created, **kwargs):
         "notifications",
         {
             "type": "notify",
-            "message": {"message": "Yangi bildirishnoma qabul qilindi!"},
+            "message": {"message": "Yangi bildirishnoma qabul qilindi!"\
+                        f"https://admin.ifoda-shop.uz/chats/{instance.id}"},
         },
     )
 
     # Telegram notification
-    TELEGRAM_CHAT_ID = "1330892088"  # admin yoki operator ID
+    TELEGRAM_CHAT_ID = "329924583"  # admin yoki operator ID
 
     send_telegram_message(
         chat_id=TELEGRAM_CHAT_ID,

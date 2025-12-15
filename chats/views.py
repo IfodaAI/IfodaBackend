@@ -56,13 +56,6 @@ class MessageViewSet(ModelViewSet):
     permission_classes=[IsAuthenticated]
 
     def create(self, request: HttpRequest | Request, *args, **kwargs):
-        # data = request.data.copy()
-        # data["sender"] = request.user.id
-
-        # serializer = self.get_serializer(data=data)
-        # serializer.is_valid(raise_exception=True)
-        # message = serializer.save()
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
