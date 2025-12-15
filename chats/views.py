@@ -92,5 +92,5 @@ class MessageViewSet(ModelViewSet):
             "notifications", {"type": "notify", "message": {"message": "Yangi bildirishnoma qabul qilindi!"}}
         )
         # TODO
-        send_telegram_message(chat_id="329924583",text="🔔 Yangi bildirishnoma qabul qilindi!")
+        send_telegram_message(chat_id="1330892088",text="🔔 Yangi bildirishnoma qabul qilindi!")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
