@@ -23,7 +23,7 @@ def message_created_notify(sender, instance: Message, created, **kwargs):
         "notifications",
         {
             "type": "notify",
-            "message": {"message": "Yangi bildirishnoma qabul qilindi!"},
+            "message": "Yangi bildirishnoma qabul qilindi!",
         },
     )
 
