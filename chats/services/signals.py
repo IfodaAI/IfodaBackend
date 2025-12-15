@@ -33,5 +33,5 @@ def message_created_notify(sender, instance: Message, created, **kwargs):
     send_telegram_message(
         chat_id=TELEGRAM_CHAT_ID,
         text="🔔 Yangi bildirishnoma qabul qilindi!\n"\
-             f"https://admin.ifoda-shop.uz/chats/{instance.id}"
+             f"https://admin.ifoda-shop.uz/chats/{instance.room.id}"
     )
