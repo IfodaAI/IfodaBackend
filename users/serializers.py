@@ -9,6 +9,7 @@ class UserSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = User
         fields = (
+            "id",
             "telegram_id",
             "phone_number",
             "first_name",
