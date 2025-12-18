@@ -120,6 +120,8 @@ class ProductSKU(BaseModel):
     class Meta:
         # Prevents model from being displayed as "Product skus" in admin panel
         verbose_name_plural = "Product SKUs"
+        
+        ordering = ["quantity"]
 
         # Prevents model from being displayed as "Product sku" in admin panel
         verbose_name = "Product SKU"
