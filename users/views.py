@@ -5,13 +5,17 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from django.http import HttpRequest
+from django.utils import timezone
+from datetime import timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .permissions import PostAndCheckUserOnly
 
-from .models import User, TelegramUser, Branch, Region, District
+from .models import User, PasswordResetCode, TelegramUser, Branch, Region, District
 from .serializers import UserSerializer, TelegramUserSerializer, BranchSerializer, UserRegisterSerializer, RegionSerializer, DistrictSerializer
 from utils.utils import get_distance_from_lat_lon_in_km
+from chats.services.telegram import send_telegram_message
+from django.contrib.auth.hashers import make_password
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
@@ -34,6 +38,98 @@ class UserViewSet(ModelViewSet):
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=["post"], url_path="get-verification-code")
+    def get_verification_code(self, request):
+        phone = request.data.get("phone_number")
+
+        if not phone:
+            return Response(
+                {"detail": "phone_number majburiy"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(phone_number=phone)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "Foydalanuvchi topilmadi"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not user.telegram_id:
+            return Response(
+                {"detail": "User telegram bilan bog‘lanmagan"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        code = PasswordResetCode.generate_code()
+
+        PasswordResetCode.objects.create(
+            user=user,
+            code=code,
+            expires_at=timezone.now() + timedelta(minutes=5)
+        )
+
+        send_telegram_message(
+            chat_id=user.telegram_id,
+            text=f"🔐 Tasdiqlash kodi: <b>{code}</b>\n\nKod 5 daqiqa amal qiladi."
+        )
+
+        return Response(
+            {"detail": "Verification kodi telegramga yuborildi"},
+            status=status.HTTP_200_OK
+        )
+    
+    @action(detail=False, methods=["post"], url_path="reset-password")
+    def reset_password(self, request):
+        phone = request.data.get("phone_number")
+        code = request.data.get("code")
+        new_password = request.data.get("new_password")
+
+        if not all([phone, code, new_password]):
+            return Response(
+                {"detail": "Barcha fieldlar majburiy"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(phone_number=phone)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User topilmadi"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        reset_code = (
+            PasswordResetCode.objects
+            .filter(user=user, code=code, is_used=False)
+            .order_by("-created_at")
+            .first()
+        )
+
+        if not reset_code:
+            return Response(
+                {"detail": "Kod noto‘g‘ri"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if reset_code.is_expired():
+            return Response(
+                {"detail": "Kod eskirgan"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.password = make_password(new_password)
+        user.save(update_fields=["password"])
+
+        reset_code.is_used = True
+        reset_code.save(update_fields=["is_used"])
+
+        return Response(
+            {"detail": "Parol muvaffaqiyatli o‘zgartirildi"},
+            status=status.HTTP_200_OK
+        )
 
 class TelegramUserViewSet(ModelViewSet):
     queryset = TelegramUser.objects.all()
