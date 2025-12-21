@@ -39,7 +39,7 @@ class UserViewSet(ModelViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=["post"], url_path="get-verification-code")
+    @action(detail=False, methods=["post"], url_path="get-verification-code",permission_classes=[PostAndCheckUserOnly])
     def get_verification_code(self, request):
         phone = request.data.get("phone_number")
 
