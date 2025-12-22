@@ -38,7 +38,7 @@ def send_telegram_message_with_button(chat_id, text, webapp_url):
                 [
                     {
                         "text": "➡️ Web sahifaga o‘tish",
-                        "url": webapp_url
+                        "web_app": {"url": webapp_url}
                     }
                 ]
             ]
