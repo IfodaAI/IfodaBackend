@@ -45,4 +45,17 @@ def send_telegram_message_with_button(chat_id, text, button_text, webapp_url):
         })
     }
 
-    requests.post(url, data=payload)
+    r = requests.post(url, data=payload)
+    result = r.json()
+    # Natijadan message_id qaytadi
+    return result.get("result", {}).get("message_id")
+
+def delete_telegram_message(chat_id, message_id):
+    token = settings.TELEGRAM_BOT_TOKEN
+    url = f"https://api.telegram.org/bot{token}/deleteMessage"
+
+    params = {
+        "chat_id": chat_id,
+        "message_id": message_id
+    }
+    requests.post(url, data=params)

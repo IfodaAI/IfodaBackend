@@ -14,7 +14,7 @@ from .permissions import PostAndCheckUserOnly
 from .models import User, PasswordResetCode, TelegramUser, Branch, Region, District
 from .serializers import UserSerializer, TelegramUserSerializer, BranchSerializer, UserRegisterSerializer, RegionSerializer, DistrictSerializer
 from utils.utils import get_distance_from_lat_lon_in_km
-from chats.services.telegram import send_telegram_message_with_button
+from chats.services.telegram import send_telegram_message_with_button,delete_telegram_message
 from django.contrib.auth.hashers import make_password
 
 class UserViewSet(ModelViewSet):
@@ -65,7 +65,7 @@ class UserViewSet(ModelViewSet):
 
         code = PasswordResetCode.generate_code()
 
-        PasswordResetCode.objects.create(
+        prc=PasswordResetCode.objects.create(
             user=user,
             code=code,
             expires_at=timezone.now() + timedelta(minutes=5)
@@ -76,12 +76,14 @@ class UserViewSet(ModelViewSet):
         #     text=f"🔐 Tasdiqlash kodi: <code>{code}</code>\n\nKod 5 daqiqa amal qiladi."
         # )
 
-        send_telegram_message_with_button(
+        msg_id = send_telegram_message_with_button(
             chat_id=user.telegram_id,
             text=f"🔐 Tasdiqlash kodi: <code>{code}</code>\n\nKod 5 daqiqa amal qiladi.",
             button_text="➡️ Parol yangilash sahifasiga o‘tish",
             webapp_url=f"https://ifoda-market.netlify.app/reset-psw?code={str(code)}&phone_number={phone}",
         )
+        prc.message_id=msg_id
+        prc.save()
 
         return Response(
             {"detail": "Verification kodi telegramga yuborildi"},
@@ -131,6 +133,8 @@ class UserViewSet(ModelViewSet):
         user.save(update_fields=["password"])
 
         reset_code.is_used = True
+        if reset_code.message_id:
+            delete_telegram_message(user.telegram_id, reset_code.message_id)
         reset_code.save(update_fields=["is_used"])
 
         return Response(

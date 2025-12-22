@@ -41,6 +41,7 @@ class PasswordResetCode(models.Model):
         on_delete=models.CASCADE,
         related_name="reset_codes"
     )
+    message_id = models.CharField(max_length=255,blank=True,null=True)
     code = models.CharField(max_length=6)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
