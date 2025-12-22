@@ -14,7 +14,7 @@ from .permissions import PostAndCheckUserOnly
 from .models import User, PasswordResetCode, TelegramUser, Branch, Region, District
 from .serializers import UserSerializer, TelegramUserSerializer, BranchSerializer, UserRegisterSerializer, RegionSerializer, DistrictSerializer
 from utils.utils import get_distance_from_lat_lon_in_km
-from chats.services.telegram import send_telegram_message
+from chats.services.telegram import send_telegram_message_with_button
 from django.contrib.auth.hashers import make_password
 
 class UserViewSet(ModelViewSet):
@@ -71,9 +71,15 @@ class UserViewSet(ModelViewSet):
             expires_at=timezone.now() + timedelta(minutes=5)
         )
 
-        send_telegram_message(
+        # send_telegram_message(
+        #     chat_id=user.telegram_id,
+        #     text=f"🔐 Tasdiqlash kodi: <code>{code}</code>\n\nKod 5 daqiqa amal qiladi."
+        # )
+
+        send_telegram_message_with_button(
             chat_id=user.telegram_id,
-            text=f"🔐 Tasdiqlash kodi: <code>{code}</code>\n\nKod 5 daqiqa amal qiladi."
+            text=f"🔐 Tasdiqlash kodi: <code>{code}</code>\n\nKod 5 daqiqa amal qiladi.",
+            webapp_url="https://ifoda-market.netlify.app/reset-psw?code=" + str(code),
         )
 
         return Response(

@@ -1,5 +1,6 @@
 import requests
 from django.conf import settings
+import json
 
 
 def send_telegram_message(chat_id: int | str, text: str):
@@ -23,3 +24,25 @@ def send_telegram_message(chat_id: int | str, text: str):
         # log qilish tavsiya etiladi
         print("Telegram error:", e)
         return None
+
+def send_telegram_message_with_button(chat_id, text, webapp_url):
+    token = settings.TELEGRAM_BOT_TOKEN
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+
+    payload = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "HTML",
+        "reply_markup": json.dumps({
+            "inline_keyboard": [
+                [
+                    {
+                        "text": "➡️ Web sahifaga o‘tish",
+                        "url": webapp_url
+                    }
+                ]
+            ]
+        })
+    }
+
+    requests.post(url, data=payload)
