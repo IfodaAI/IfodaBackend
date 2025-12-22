@@ -2,7 +2,7 @@ import requests
 from django.conf import settings
 
 
-def send_telegram_message(chat_id: int | str, text: str, parse_mode: str="HTML"):
+def send_telegram_message(chat_id: int | str, text: str):
     """
     Telegram user yoki guruhga xabar yuboradi
     """
@@ -12,7 +12,7 @@ def send_telegram_message(chat_id: int | str, text: str, parse_mode: str="HTML")
     payload = {
         "chat_id": chat_id,
         "text": text,
-        "parse_mode": parse_mode,
+        "parse_mode": "HTML",
     }
 
     try:
