@@ -79,10 +79,10 @@ class UserViewSet(ModelViewSet):
 
         send_telegram_message(
             chat_id=user.telegram_id,
-            text=
-                f"""🔐 <b>Tasdiqlash kodi:</b><br>
+            text=f"""🔐 <b>Tasdiqlash kodi:</b><br>
                 <code>{code}</code><br><br>
-                <i>Kod 5 daqiqa amal qiladi</i>"""
+                <i>Kod 5 daqiqa amal qiladi</i>""",
+            parse_mode="HTML"
             
         )
 
