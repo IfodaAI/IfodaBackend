@@ -71,20 +71,20 @@ class UserViewSet(ModelViewSet):
             expires_at=timezone.now() + timedelta(minutes=5)
         )
 
-        # send_telegram_message(
-        #     chat_id=user.telegram_id,
-        #     text=f"🔐 Tasdiqlash kodi: \n```{code}```\n\nKod 5 daqiqa amal qiladi.",
-        #     parse_mode="MarkdownV2"
-        # )
-
         send_telegram_message(
             chat_id=user.telegram_id,
-            text=f"""🔐 <b>Tasdiqlash kodi:</b><br>
-                <code>{code}</code><br><br>
-                <i>Kod 5 daqiqa amal qiladi</i>""",
-            parse_mode="HTML"
-            
+            text=f"🔐 Tasdiqlash kodi: \n```{code}```\n\nKod 5 daqiqa amal qiladi.",
+            parse_mode="MarkdownV2"
         )
+
+        # send_telegram_message(
+        #     chat_id=user.telegram_id,
+        #     text=f"""🔐 <b>Tasdiqlash kodi:</b><br>
+        #         <code>{code}</code><br><br>
+        #         <i>Kod 5 daqiqa amal qiladi</i>""",
+        #     parse_mode="HTML"
+            
+        # )
 
         return Response(
             {"detail": "Verification kodi telegramga yuborildi"},
