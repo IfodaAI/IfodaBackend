@@ -25,7 +25,7 @@ def send_telegram_message(chat_id: int | str, text: str):
         print("Telegram error:", e)
         return None
 
-def send_telegram_message_with_button(chat_id, text, webapp_url):
+def send_telegram_message_with_button(chat_id, text, button_text, webapp_url):
     token = settings.TELEGRAM_BOT_TOKEN
     url = f"https://api.telegram.org/bot{token}/sendMessage"
 
@@ -37,7 +37,7 @@ def send_telegram_message_with_button(chat_id, text, webapp_url):
             "inline_keyboard": [
                 [
                     {
-                        "text": "➡️ Web sahifaga o‘tish",
+                        "text": button_text,
                         "web_app": {"url": webapp_url}
                     }
                 ]

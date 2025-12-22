@@ -79,6 +79,7 @@ class UserViewSet(ModelViewSet):
         send_telegram_message_with_button(
             chat_id=user.telegram_id,
             text=f"🔐 Tasdiqlash kodi: <code>{code}</code>\n\nKod 5 daqiqa amal qiladi.",
+            button_text="➡️ Parol yangilash sahifaga o‘tish",
             webapp_url=f"https://ifoda-market.netlify.app/reset-psw?code={str(code)}&phone_number={phone}",
         )
 
