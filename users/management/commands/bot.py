@@ -11,8 +11,7 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    WebAppInfo,
-    ReplyKeyboardRemove
+    WebAppInfo
 )
 from users.models import TelegramUser
 from asgiref.sync import sync_to_async
@@ -97,7 +96,7 @@ async def contact_handler(message: types.Message):
 
         await message.answer(
             "*Ro'yxatdan o'tganingiz uchun rahmat!*",
-            reply_markup=ReplyKeyboardRemove,
+            reply_markup=types.ReplyKeyboardRemove(),
             parse_mode=ParseMode.MARKDOWN
         )
         
@@ -146,7 +145,7 @@ async def handle_phone_manual(message: types.Message):
         
         await message.answer(
             "*Ro'yxatdan o'tganingiz uchun rahmat!*",
-            reply_markup=ReplyKeyboardRemove,
+            reply_markup=types.ReplyKeyboardRemove(),
             parse_mode=ParseMode.MARKDOWN
         )
         await message.answer(
