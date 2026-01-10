@@ -38,9 +38,9 @@ class OrderPermission(BasePermission):
         # Manager: can view & modify only orders of their branch
         if request.user.role == "MANAGER":
             # ensure manager has branch assigned
-            if obj.branch_id is None or request.user.branch.branch_id is None:
+            if obj.branch.branch_id is None or request.user.branch.branch_id is None:
                 return False
-            return obj.branch_id == request.user.branch.branch_id
+            return obj.branch.branch_id == request.user.branch.branch_id
 
         # Dispatcher: can read all orders, cannot modify
         if request.user.role == "DISPATCHER":
