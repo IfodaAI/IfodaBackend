@@ -125,7 +125,7 @@ class OrderViewSet(ModelViewSet):
         user = self.request.user
         order = self.get_object()
 
-        if user.role == "MANAGER" and order.branch_id != user.branch_id:
+        if user.role == "MANAGER" and order.branch_id != user.branch.branch_id:
             raise PermissionDenied("Siz faqat o‘z filialingizdagi buyurtmalarni tahrirlashingiz mumkin.")
         if user.role == "DISPATCHER":
             raise PermissionDenied("Dispetcherlar uchun faqat o‘qish huquqi bor.")
