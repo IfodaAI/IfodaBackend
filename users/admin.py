@@ -75,7 +75,7 @@ class TelegramUserAdminClass(ModelAdmin):
 
 @admin.register(Branch)
 class BranchAdminClass(ModelAdmin):
-    list_display = ["id", "name", "brainch_id", "location"]
+    list_display = ["id", "name", "branch_id", "location"]
 
     def location(self, obj):
         return f"{obj.latitude}° N {obj.longitude}° W"

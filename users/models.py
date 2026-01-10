@@ -76,7 +76,7 @@ class TelegramUser(BaseModel):
         return f"{self.first_name}"
 
 class Branch(BaseModel):
-    brainch_id = models.BigIntegerField(
+    branch_id = models.BigIntegerField(
         unique=True
     )  # This field is used to integrate with LOGIX system.
     manager = models.OneToOneField(
