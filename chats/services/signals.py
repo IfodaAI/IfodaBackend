@@ -4,7 +4,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 from chats.models import Message
-from chats.services.telegram import send_telegram_message
+from chats.services.telegram import send_telegram_message,send_telegram_message_with_button
 
 
 @receiver(post_save, sender=Message)
@@ -34,9 +34,15 @@ def message_created_notify(sender, instance: Message, created, **kwargs):
 
     # Telegram notification
     TELEGRAM_CHAT_ID = "329924583"  # admin yoki operator ID
-
-    send_telegram_message(
+    send_telegram_message_with_button(
         chat_id=TELEGRAM_CHAT_ID,
-        text="🔔 Yangi bildirishnoma qabul qilindi!\n"\
-             f"https://admin.ifoda-shop.uz/chats/{instance.room.id}"
+        text="🔔 Yangi bildirishnoma qabul qilindi!",
+        button_text="Bildiruvnomaning batafsil ko'rinishi",
+        webapp_url=f"https://ifoda-market.netlify.app/chat/{instance.room.id}"
     )
+
+    # send_telegram_message(
+    #     chat_id=TELEGRAM_CHAT_ID,
+    #     text="🔔 Yangi bildirishnoma qabul qilindi!\n"\
+    #          f"https://admin.ifoda-shop.uz/chats/{instance.room.id}"
+    # )
