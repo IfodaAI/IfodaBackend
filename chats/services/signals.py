@@ -14,6 +14,11 @@ def message_created_notify(sender, instance: Message, created, **kwargs):
 
     # faqat USER yozgan xabar bo‘lsa
     if instance.role != "QUESTION":
+        send_telegram_message(
+            chat_id=instance.room.owner.telegram_id,
+            text="🔔 Yangi bildirishnoma qabul qilindi!"\
+            f"https://ifoda-market.netlify.app/chat/{instance.room.id}"
+        )
         return
 
     channel_layer = get_channel_layer()
