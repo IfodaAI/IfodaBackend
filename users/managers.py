@@ -1,5 +1,6 @@
 from django.contrib.auth.models import BaseUserManager
 from utils.utils import normalize_phone
+import random,string
 
 class UserManager(BaseUserManager):
     def create_user(self, phone_number, password=None, **extra_fields):
@@ -23,3 +24,24 @@ class UserManager(BaseUserManager):
         if extra_fields.get("role") != "ADMIN":
             raise ValueError("In order to create superuser your role must be ADMIN.")
         return self.create_user(phone_number, password, **extra_fields)
+    
+    def generate_random_password(self, length=10):
+        chars = string.ascii_letters + string.digits
+        return ''.join(random.choice(chars) for _ in range(length))
+
+    def create_user_with_random_password(self, phone_number):
+        if not phone_number:
+            raise ValueError("Phone number is required")
+
+        password = self.generate_random_password()
+
+        user = self.model(
+            phone_number=phone_number,
+            role="USER",
+            is_active=True
+        )
+
+        user.set_password(password)
+        user.save(using=self._db)
+
+        return user

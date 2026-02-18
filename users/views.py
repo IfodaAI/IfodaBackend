@@ -22,6 +22,34 @@ class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
     permission_classes=[PostAndCheckUserOnly]
 
+    @action(detail=False, methods=["get"])
+    def get_token(self, request):
+        phone_number = request.GET.get("phone_number")
+        if not phone_number:
+            instance=self.get_queryset().filter(phone_number=phone_number).last()
+            refresh = RefreshToken.for_user(instance)
+            return Response(
+                {
+                    "id": instance.id,
+                    "full_name": instance.full_name,
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+                status=status.HTTP_201_CREATED
+            )
+        user = User.objects.create_user_with_random_password(phone_number)
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "id": user.id,
+                "full_name": user.full_name,
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            },
+            status=status.HTTP_201_CREATED
+        )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     @action(detail=False, methods=["post"])
     def register(self, request):
         serializer = UserRegisterSerializer(data=request.data)
