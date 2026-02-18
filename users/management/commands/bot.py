@@ -36,7 +36,7 @@ async def start_handler(message: types.Message):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🏪 Ifoda Shop'ni ochish", 
+                        text="🏪 Ifoda Shopни очиш",
                         web_app=WebAppInfo(url=settings.WEBAPP_URL)
                     )
                 ]
@@ -44,13 +44,13 @@ async def start_handler(message: types.Message):
         )
         # Remove previous keyboard and send new message
         await message.answer(
-            f"*Xush kelibsiz, {user.first_name}!*\nIlovani ishlatishingiz mumkin:",
+            f"*Хуш келибсиз, {user.first_name}!*\nИловани ишлатишингиз мумкин:",
             reply_markup=types.ReplyKeyboardRemove(),  # Remove keyboard
             parse_mode=ParseMode.MARKDOWN
         )
         # Send webapp button separately
         await message.answer(
-            "Ilovani ochish uchun quyidagi tugmani bosing:",
+            "Иловани очиш учун қуйидаги тугмани босинг:",
             reply_markup=keyboard,
             parse_mode=ParseMode.MARKDOWN
         )
@@ -58,15 +58,15 @@ async def start_handler(message: types.Message):
         keyboard = ReplyKeyboardMarkup(
             keyboard=[
                 [
-                    KeyboardButton(text="Raqamni ulashish 📞", request_contact=True),
-                    KeyboardButton(text="Qo'lda kiritish ✍️"),
+                    KeyboardButton(text="Рақамни улашиш 📞", request_contact=True),
+                    KeyboardButton(text="Қўлда киритиш ✍️"),
                 ]
             ],
             resize_keyboard=True,
             one_time_keyboard=True
         )
         await message.answer(
-            "*Ifoda Shop*ga xush kelibsiz!\nIltimos, telefon raqamingizni ulashing yoki qo'lda kiriting:", 
+            "*Ifoda Shop*га хуш келибсиз!\nИлтимос, телефон рақамингизни улашинг ёки қўлда киритинг:", 
             reply_markup=keyboard,
             parse_mode=ParseMode.MARKDOWN
         )
@@ -87,7 +87,7 @@ async def contact_handler(message: types.Message):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🏪 Ifoda Shop'ni ochish", 
+                        text="🏪 Ifoda Shopни очиш",
                         web_app=WebAppInfo(url=settings.WEBAPP_URL)
                     )
                 ]
@@ -95,24 +95,24 @@ async def contact_handler(message: types.Message):
         )
 
         await message.answer(
-            "*Ro'yxatdan o'tganingiz uchun rahmat!*",
+            "*Рўйхатдан ўтганингиз учун раҳмат!*",
             reply_markup=types.ReplyKeyboardRemove(),
             parse_mode=ParseMode.MARKDOWN
         )
         
         await message.answer(
-            "Endi ilovani ishlatishingiz mumkin:",
+            "Энди иловани ишлатишингиз мумкин:",
             reply_markup=keyboard,
             parse_mode=ParseMode.MARKDOWN
         )
     except Exception as e:
-        await message.answer("Ro'yxatdan o'tishda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.")
+        await message.answer("Рўйхатдан ўтишда хатолик юз берди. Илтимос, қайта уриниб кўринг.")
         logging.error(f"Error in contact_handler: {e}")
 
-@dp.message(lambda msg: msg.text == "Qo'lda kiritish ✍️")
+@dp.message(lambda msg: msg.text == "Қўлда киритиш ✍️")
 async def manual_registration(message: types.Message):
     await message.answer(
-        "*Iltimos, telefon raqamingizni* quyidagi formatda yuboring:\n`+998901234567`",
+        "*Илтимос, телефон рақамингизни* қуйидаги форматда юборинг:\n`+998901234567`",
         parse_mode=ParseMode.MARKDOWN
     )
 
@@ -121,7 +121,7 @@ async def handle_phone_manual(message: types.Message):
     try:
         phone_number = message.text.strip()
         if len(phone_number) != 13:
-            await message.answer("Noto'g'ri format. Iltimos, raqamni +998901234567 formatida kiriting")
+            await message.answer("Нотўғри формат. Илтимос, рақамни +998901234567 форматида киритинг")
             return
 
         user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
@@ -136,7 +136,7 @@ async def handle_phone_manual(message: types.Message):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🏪 Ifoda Shop'ni ochish", 
+                        text="🏪 Ifoda Shopни очиш",
                         web_app=WebAppInfo(url=settings.WEBAPP_URL)
                     )
                 ]
@@ -144,17 +144,17 @@ async def handle_phone_manual(message: types.Message):
         )
         
         await message.answer(
-            "*Ro'yxatdan o'tganingiz uchun rahmat!*",
+            "*Рўйхатдан ўтганингиз учун раҳмат!*",
             reply_markup=types.ReplyKeyboardRemove(),
             parse_mode=ParseMode.MARKDOWN
         )
         await message.answer(
-            "Endi ilovani ishlatishingiz mumkin:",
+            "Энди иловани ишлатишингиз мумкин:",
             reply_markup=keyboard,
             parse_mode=ParseMode.MARKDOWN
         )
     except Exception as e:
-        await message.answer("Ro'yxatdan o'tishda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.")
+        await message.answer("Рўйхатдан ўтишда хатолик юз берди. Илтимос, қайта уриниб кўринг.")
         logging.error(f"Error in handle_phone_manual: {e}")
 
 import signal
