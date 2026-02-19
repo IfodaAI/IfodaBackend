@@ -26,9 +26,13 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=["get"], permission_classes=[AllowAny])
     def get_token(self, request):
         phone_number = request.GET.get("phone_number")
+        
         if not phone_number:
-            instance=self.get_queryset().filter(phone_number=phone_number).last()
-            refresh = RefreshToken.for_user(instance)
+            return Response({"error": "Phone number is required"}, status=400)
+
+        user = User.objects.filter(phone_number=phone_number).last()
+        if user:
+            refresh = RefreshToken.for_user(user)
             return Response(
                 {
                     "id": instance.id,
@@ -38,8 +42,8 @@ class UserViewSet(ModelViewSet):
                 },
                 status=status.HTTP_201_CREATED
             )
-        user = User.objects.create_user_with_random_password(phone_number)
-        refresh = RefreshToken.for_user(user)
+        new_user = User.objects.create_user_with_random_password(phone_number)
+        refresh = RefreshToken.for_user(new_user)
         return Response(
             {
                 "id": user.id,
