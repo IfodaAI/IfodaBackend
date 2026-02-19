@@ -35,8 +35,8 @@ class UserViewSet(ModelViewSet):
             refresh = RefreshToken.for_user(user)
             return Response(
                 {
-                    "id": instance.id,
-                    "full_name": instance.full_name,
+                    "id": user.id,
+                    "full_name": user.full_name,
                     "refresh": str(refresh),
                     "access": str(refresh.access_token),
                 },
@@ -46,8 +46,8 @@ class UserViewSet(ModelViewSet):
         refresh = RefreshToken.for_user(new_user)
         return Response(
             {
-                "id": user.id,
-                "full_name": user.full_name,
+                "id": new_user.id,
+                "full_name": new_user.full_name,
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
             },
