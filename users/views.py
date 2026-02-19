@@ -1,4 +1,5 @@
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -22,7 +23,7 @@ class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
     permission_classes=[PostAndCheckUserOnly]
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get"], permission_classes=[AllowAny])
     def get_token(self, request):
         phone_number = request.GET.get("phone_number")
         if not phone_number:
