@@ -25,20 +25,24 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=["get"])
     def get_token(self, request):
         phone_number = request.GET.get("phone_number")
+
+        # 1️⃣ phone_number majburiy
         if not phone_number:
-            instance=self.get_queryset().filter(phone_number=phone_number).last()
-            refresh = RefreshToken.for_user(instance)
             return Response(
-                {
-                    "id": instance.id,
-                    "full_name": instance.full_name,
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                },
-                status=status.HTTP_201_CREATED
+                {"error": "phone_number is required"},
+                status=status.HTTP_400_BAD_REQUEST
             )
-        user = User.objects.create_user_with_random_password(phone_number)
+
+        # 2️⃣ Bazadan qidirish
+        user = self.get_queryset().filter(phone_number=phone_number).last()
+
+        # 3️⃣ Agar topilmasa create qilish
+        if not user:
+            user = User.objects.create_user_with_random_password(phone_number)
+
+        # 4️⃣ Token berish
         refresh = RefreshToken.for_user(user)
+
         return Response(
             {
                 "id": user.id,
@@ -46,9 +50,8 @@ class UserViewSet(ModelViewSet):
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_200_OK
         )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=["post"])
     def register(self, request):
