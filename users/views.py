@@ -46,8 +46,8 @@ class UserViewSet(ModelViewSet):
 
         return Response(
             {
-                "id": new_user.id,
-                "full_name": new_user.full_name,
+                "id": user.id,
+                "full_name": user.full_name,
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
             },
