@@ -59,3 +59,6 @@ class Message(BaseModel):
         else:
             self.role = "ANSWER"
         return super().save(*args, **kwargs)
+    
+    class Meta:
+        ordering=["created_date"]
