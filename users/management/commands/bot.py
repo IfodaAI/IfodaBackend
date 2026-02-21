@@ -129,7 +129,7 @@ async def handle_phone_manual(message: types.Message):
             telegram_id=message.from_user.id,
             first_name=message.from_user.first_name
         )
-        if not created:
+        if created:
             await message.answer("User yaralmadi.")
 
         user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
