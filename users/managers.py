@@ -29,7 +29,7 @@ class UserManager(BaseUserManager):
         chars = string.ascii_letters + string.digits
         return ''.join(random.choice(chars) for _ in range(length))
 
-    def create_user_with_random_password(self, phone_number):
+    def create_user_with_random_password(self, phone_number, telegram_id, first_name=""):
         if not phone_number:
             raise ValueError("Phone number is required")
 
@@ -37,6 +37,8 @@ class UserManager(BaseUserManager):
 
         user = self.model(
             phone_number=phone_number,
+            telegram_id=telegram_id,
+            first_name=first_name,
             role="USER",
             is_active=True
         )

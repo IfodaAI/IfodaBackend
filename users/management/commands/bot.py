@@ -13,7 +13,7 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     WebAppInfo
 )
-from users.models import TelegramUser
+from users.models import User,TelegramUser
 from asgiref.sync import sync_to_async
 
 # Suppress pydantic warnings
@@ -123,12 +123,19 @@ async def handle_phone_manual(message: types.Message):
         if len(phone_number) != 13:
             await message.answer("Нотўғри формат. Илтимос, рақамни +998901234567 форматида киритинг")
             return
+        
+        base_user, created = await sync_to_async(User.objects.create_user_with_random_password)(
+            telegram_id=message.from_user.id,
+            phone_number=phone_number,
+            first_name=message.from_user.first_name
+        )
 
         user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
-            telegram_id=str(message.from_user.id),
+            telegram_id=message.from_user.id,
             defaults={
                 "phone_number": phone_number,
                 "first_name": message.from_user.first_name,
+                "user":base_user
             },
         )
         
