@@ -125,10 +125,12 @@ async def handle_phone_manual(message: types.Message):
             return
         
         base_user, created = await sync_to_async(User.objects.create_user_with_random_password)(
-            telegram_id=message.from_user.id,
             phone_number=phone_number,
+            telegram_id=message.from_user.id,
             first_name=message.from_user.first_name
         )
+        if not created:
+            await message.answer("User yaralmadi.")
 
         user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
             telegram_id=message.from_user.id,
