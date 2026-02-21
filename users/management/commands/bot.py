@@ -75,11 +75,18 @@ async def start_handler(message: types.Message):
 async def contact_handler(message: types.Message):
     try:
         contact = message.contact
+        base_user = await sync_to_async(User.objects.create_user_with_random_password)(
+            phone_number=contact.phone_number,
+            telegram_id=message.from_user.id,
+            first_name=contact.first_name or message.from_user.first_name
+        )
+
         user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
             telegram_id=str(message.from_user.id),
             defaults={
                 "phone_number": contact.phone_number,
                 "first_name": contact.first_name or message.from_user.first_name,
+                "user":base_user
             },
         )
         
@@ -129,8 +136,6 @@ async def handle_phone_manual(message: types.Message):
             telegram_id=message.from_user.id,
             first_name=message.from_user.first_name
         )
-        if base_user:
-            await message.answer(base_user.first_name)
 
         user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
             telegram_id=message.from_user.id,

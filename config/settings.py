@@ -259,10 +259,10 @@ WEBAPP_URL = os.getenv("WEBAPP_URL", "https://webapp.ifoda-shop.uz")
 
 
 # Django’ga SSL ni nginx orqali kelayotganini bildirish uchun
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Majburiy HTTPS yo‘nalish
-SECURE_SSL_REDIRECT = True  # (ixtiyoriy)
+# SECURE_SSL_REDIRECT = True  # (ixtiyoriy)
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
