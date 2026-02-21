@@ -124,12 +124,12 @@ async def handle_phone_manual(message: types.Message):
             await message.answer("Нотўғри формат. Илтимос, рақамни +998901234567 форматида киритинг")
             return
         
-        base_user, created = await sync_to_async(User.objects.create_user_with_random_password)(
+        base_user = await sync_to_async(User.objects.create_user_with_random_password)(
             phone_number=phone_number,
             telegram_id=message.from_user.id,
             first_name=message.from_user.first_name
         )
-        if created:
+        if not base_user:
             await message.answer("User yaralmadi.")
 
         user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
