@@ -201,6 +201,9 @@ class Command(BaseCommand):
 
         # Initialize bot
         bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+        bot.set_my_commands([
+            types.BotCommand(command="start", description="Botga start berish")
+        ])
         
         self.stdout.write(
             self.style.SUCCESS("Bot started in polling mode...\nPress Ctrl+C to stop")
