@@ -201,8 +201,8 @@ class Command(BaseCommand):
 
         # Initialize bot
         bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
-        bot.set_my_commands([
-            types.BotCommand(command="start", description="Botga start berish")
+        await bot.set_my_commands([
+            types.BotCommand(command="start", description="Botni ishga tushirish 🚀")
         ])
         
         self.stdout.write(
