@@ -255,7 +255,7 @@ PAYTECHUZ = {
     },
 }
 
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://webapp.ifoda-shop.uz")
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://ifoda-shop.uz")
 
 
 # Django’ga SSL ni nginx orqali kelayotganini bildirish uchun

@@ -36,7 +36,7 @@ async def start_handler(message: types.Message):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🏪 Ifoda Shopни очиш",
+                        text=f"🏪 Ifoda Shopни очиш {settings.WEBAPP_URL}",
                         web_app=WebAppInfo(url=settings.WEBAPP_URL)
                     )
                 ]
@@ -94,7 +94,7 @@ async def contact_handler(message: types.Message):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🏪 Ifoda Shopни очиш",
+                        text=f"🏪 Ifoda Shopни очиш {settings.WEBAPP_URL}",
                         web_app=WebAppInfo(url=settings.WEBAPP_URL)
                     )
                 ]
@@ -150,7 +150,7 @@ async def handle_phone_manual(message: types.Message):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🏪 Ifoda Shopни очиш",
+                        text=f"🏪 Ifoda Shopни очиш {settings.WEBAPP_URL}",
                         web_app=WebAppInfo(url=settings.WEBAPP_URL)
                     )
                 ]
