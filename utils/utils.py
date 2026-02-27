@@ -1,4 +1,29 @@
+import json
 import math
+
+
+def parse_ids_param(ids_param: str) -> list:
+    """
+    IDs parametrini parse qiladi.
+    Qo'llab-quvvatlanadigan formatlar:
+    - ids=[1,2,3] (JSON array)
+    - ids=1,2,3 (vergul bilan ajratilgan)
+
+    Args:
+        ids_param: IDs string parametri
+
+    Returns:
+        IDs ro'yxati
+    """
+    if not ids_param:
+        return []
+
+    try:
+        # JSON format: [1,2,3]
+        return json.loads(ids_param)
+    except json.JSONDecodeError:
+        # Vergul bilan ajratilgan: 1,2,3
+        return [id_str.strip() for id_str in ids_param.split(",") if id_str.strip()]
 
 
 def get_distance_from_lat_lon_in_km(lat1, lon1, lat2, lon2):

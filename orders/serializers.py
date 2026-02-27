@@ -11,6 +11,24 @@ class OrderSerializer(BaseModelSerializer):
 
     class Meta(BaseModelSerializer.Meta):
         model = Order
+        fields = (
+            "id",
+            "amount",
+            "status",
+            "branch",
+            "branch_name",
+            "shipping_address",
+            "phone_number",
+            "delivery_method",
+            "delivery_price",
+            "delivery_latitude",
+            "delivery_longitude",
+            "user",
+            "user_fullname",
+            "payment_gateway",
+            "created_date",
+            "updated_date",
+        )
     
     def get_user_fullname(self, obj):
         if obj.user:
@@ -40,6 +58,7 @@ class OrderSerializer(BaseModelSerializer):
 class OrderItemSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = OrderItem
+        fields = ("id", "order", "product", "quantity", "price")
     
     def __init__(self, *args, **kwargs):
         super(OrderItemSerializer, self).__init__(*args, **kwargs)
@@ -53,3 +72,4 @@ class OrderItemSerializer(BaseModelSerializer):
 class DeliverySerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Delivery
+        fields = ("id", "order", "status", "tracking_number", "courier_name")

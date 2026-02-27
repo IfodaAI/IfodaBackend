@@ -63,9 +63,9 @@ class OrderItem(BaseModel):
     quantity = models.BigIntegerField(default=1)
     price = models.FloatField()
 
-    def save(self):
+    def save(self, *args, **kwargs):
         self.price = self.product.price * self.quantity
-        return super().save()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f"OrderItem {self.id} of Order {self.order.id}"

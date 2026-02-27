@@ -1,10 +1,12 @@
 from rest_framework.viewsets import ModelViewSet
-from users.models import User,TelegramUser,Branch
-from orders.models import Order
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 from django.db.models import Q
+
+from users.models import User, TelegramUser, Branch
+from orders.models import Order
+from utils.utils import parse_ids_param
 
 from .models import (
     Disease,
@@ -26,7 +28,7 @@ from .serializers import (
 )
 
 class DiseaseViewSet(ModelViewSet):
-    queryset = Disease.objects.all()
+    queryset = Disease.objects.select_related("category").prefetch_related("product")
     serializer_class = DiseaseSerializer
 
     def list(self, request, *args, **kwargs):
@@ -60,40 +62,32 @@ class ProductSubcategoryViewSet(ModelViewSet):
     filterset_fields=["category"]
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related("category", "category__category").prefetch_related("product_skus", "product_images")
     serializer_class = ProductSerializer
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
         ids = self.request.query_params.get("ids")
 
         if ids:
-            # ids=[1,2,3] yoki ids=1,2,3 formatda kelsa ham ishlaydi
-            import json
-            try:
-                # Agar format ids=[1,2,3] bo‘lsa
-                ids_list = json.loads(ids)
-            except json.JSONDecodeError:
-                # Agar format ids=1,2,3 bo‘lsa
-                ids_list = ids.split(",")
-
+            ids_list = parse_ids_param(ids)
             queryset = queryset.filter(id__in=ids_list)
 
         return queryset
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        name=request.GET.get("name")
+        name = request.GET.get("name")
         if name:
             queryset = queryset.filter(
                 Q(name__icontains=name) | Q(description__icontains=name)
             )
-        category=request.GET.get("category")
+        category = request.GET.get("category")
         if category:
-            queryset=queryset.filter(category__category__id=category)
-        subcategory=request.GET.get("subcategory")
+            queryset = queryset.filter(category__category__id=category)
+        subcategory = request.GET.get("subcategory")
         if subcategory:
-            queryset=queryset.filter(category__id=subcategory)
+            queryset = queryset.filter(category__id=subcategory)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -103,25 +97,18 @@ class ProductViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
 class ProductSKUViewSet(ModelViewSet):
-    queryset = ProductSKU.objects.all()
+    queryset = ProductSKU.objects.select_related("product", "product__category")
     serializer_class = ProductSKUSerializer
-    filterset_fields=["product"]
+    filterset_fields = ["product"]
 
     def get_queryset(self):
         queryset = super().get_queryset()
         ids = self.request.query_params.get("ids")
 
         if ids:
-            # ids=[1,2,3] yoki ids=1,2,3 formatda kelsa ham ishlaydi
-            import json
-            try:
-                # Agar format ids=[1,2,3] bo‘lsa
-                ids_list = json.loads(ids)
-            except json.JSONDecodeError:
-                # Agar format ids=1,2,3 bo‘lsa
-                ids_list = ids.split(",")
-
+            ids_list = parse_ids_param(ids)
             queryset = queryset.filter(id__in=ids_list)
 
         return queryset

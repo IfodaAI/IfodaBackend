@@ -44,18 +44,44 @@ class UserRegisterSerializer(BaseModelSerializer):
 class TelegramUserSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = TelegramUser
+        fields = (
+            "id",
+            "telegram_id",
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "region",
+            "district",
+            "phone_number",
+            "created_date",
+        )
+
 
 class BranchSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Branch
+        fields = (
+            "id",
+            "branch_id",
+            "manager",
+            "name",
+            "latitude",
+            "longitude",
+            "phone_number",
+        )
+
 
 class RegionSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Region
+        fields = ("id", "name", "small_package")
+
 
 class DistrictSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = District
+        fields = ("id", "name", "region", "small_package")
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 

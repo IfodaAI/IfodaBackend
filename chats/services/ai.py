@@ -1,3 +1,5 @@
+import os
+
 from google import genai
 from google.genai import types
 from products.models import Disease
@@ -6,9 +8,9 @@ from products.models import Disease
 
 
 def generate_prompt(image_path):
-    kasalliklar=list(Disease.objects.values_list("name",flat=True))
+    kasalliklar = list(Disease.objects.values_list("name", flat=True))
     client = genai.Client(
-        api_key="AIzaSyBN2VdiUn4W2rJICGCzGeJy83pMwcXjdTE",
+        api_key=os.getenv("GOOGLE_API_KEY"),
     )
 
     files = [

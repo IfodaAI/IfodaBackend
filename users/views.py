@@ -9,21 +9,28 @@ from django.http import HttpRequest
 from django.utils import timezone
 from datetime import timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.hashers import make_password
 
 from .permissions import PostAndCheckUserOnly
-
+from .throttles import AuthRateThrottle
 from .models import User, PasswordResetCode, TelegramUser, Branch, Region, District
-from .serializers import UserSerializer, TelegramUserSerializer, BranchSerializer, UserRegisterSerializer, RegionSerializer, DistrictSerializer
-from utils.utils import get_distance_from_lat_lon_in_km
-from chats.services.telegram import send_telegram_message_with_button,delete_telegram_message
-from django.contrib.auth.hashers import make_password
+from .serializers import (
+    UserSerializer,
+    TelegramUserSerializer,
+    BranchSerializer,
+    UserRegisterSerializer,
+    RegionSerializer,
+    DistrictSerializer,
+)
+from utils.utils import get_distance_from_lat_lon_in_km, normalize_phone
+from chats.services.telegram import send_telegram_message_with_button, delete_telegram_message
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes=[PostAndCheckUserOnly]
 
-    @action(detail=False, methods=["get"], permission_classes=[AllowAny])
+    @action(detail=False, methods=["get"], permission_classes=[AllowAny], throttle_classes=[AuthRateThrottle])
     def get_token(self, request):
         phone_number = request.GET.get("phone_number")
 
@@ -34,7 +41,8 @@ class UserViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 2️⃣ Bazadan qidirish
+        # 2️⃣ Telefon raqamini normalizatsiya qilish va bazadan qidirish
+        phone_number = normalize_phone(phone_number)
         user = self.get_queryset().filter(phone_number=phone_number).last()
 
         # 3️⃣ Agar topilmasa create qilish
@@ -71,7 +79,7 @@ class UserViewSet(ModelViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=["POST"], url_path="get-verification-code",permission_classes=[PostAndCheckUserOnly])
+    @action(detail=False, methods=["POST"], url_path="get-verification-code", permission_classes=[PostAndCheckUserOnly], throttle_classes=[AuthRateThrottle])
     def get_verification_code(self, request):
         phone = request.data.get("phone_number")
 
@@ -206,21 +214,27 @@ class BranchViewSet(ModelViewSet):
                 status=400,
             )
 
-        branches = []
-        for branch in Branch.objects.all():
-            distance = get_distance_from_lat_lon_in_km(
-                user_lat, user_lon, branch.latitude, branch.longitude
-            )
-            branches.append({
-                "id": branch.id,
-                "name": branch.name,
-                "phone_number": str(branch.phone_number),
-                "latitude": branch.latitude,
-                "longitude": branch.longitude,
-                "distance": round(distance, 2),
-            })
+        # Faqat kerakli maydonlarni olish (optimizatsiya)
+        branch_data = Branch.objects.values("id", "name", "phone_number", "latitude", "longitude")
 
-        # Masofaga qarab saralash va 10 ta eng yaqinini olish
+        branches = [
+            {
+                "id": branch["id"],
+                "name": branch["name"],
+                "phone_number": str(branch["phone_number"]),
+                "latitude": branch["latitude"],
+                "longitude": branch["longitude"],
+                "distance": round(
+                    get_distance_from_lat_lon_in_km(
+                        user_lat, user_lon, branch["latitude"], branch["longitude"]
+                    ),
+                    2,
+                ),
+            }
+            for branch in branch_data
+        ]
+
+        # Masofaga qarab saralash va 5 ta eng yaqinini olish
         nearest = sorted(branches, key=lambda x: x["distance"])[:5]
         return Response(nearest)
 

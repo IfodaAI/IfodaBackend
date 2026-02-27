@@ -2,6 +2,7 @@ from django.http import HttpRequest
 
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -81,15 +82,16 @@ class OrderViewSet(ModelViewSet):
         else:
             user_lat = float(order_data.get("delivery_latitude"))
             user_lon = float(order_data.get("delivery_longitude"))
-            payment_method = order_data.get("payment_method")
 
+            # Optimizatsiya: faqat kerakli maydonlarni olish
+            branches = Branch.objects.values("id", "latitude", "longitude")
             nearest_branch = min(
-                Branch.objects.all(),
+                branches,
                 key=lambda b: get_distance_from_lat_lon_in_km(
-                    user_lat, user_lon, b.latitude, b.longitude
+                    user_lat, user_lon, b["latitude"], b["longitude"]
                 ),
             )
-            order_data["branch"] = nearest_branch.id
+            order_data["branch"] = nearest_branch["id"]
 
         # ✅ Order yaratish
         order_data["user"] = request.user.id
@@ -97,13 +99,22 @@ class OrderViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
 
-        # ✅ Itemlar yaratish va summani hisoblash
+        # ✅ Itemlar yaratish va summani hisoblash (optimizatsiya: bitta query)
+        product_ids = [item["product"] for item in items]
+        products = {str(p.id): p for p in ProductSKU.objects.filter(id__in=product_ids)}
+
         total_amount = 0
+        order_items_to_create = []
         for item in items:
-            product = ProductSKU.objects.get(id=item["product"])
-            order_item = OrderItem(order=order, product=product, quantity=item["quantity"])
-            order_item.save()
-            total_amount += order_item.price
+            product = products.get(str(item["product"]))
+            if product:
+                order_item = OrderItem(order=order, product=product, quantity=item["quantity"])
+                order_item.price = product.price * item["quantity"]
+                order_items_to_create.append(order_item)
+                total_amount += order_item.price
+
+        # Bulk create for better performance
+        OrderItem.objects.bulk_create(order_items_to_create)
 
         # ✅ Yakuniy summa
         order.amount = total_amount
@@ -133,14 +144,16 @@ class OrderViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        # Optimizatsiya: bog'liq obyektlarni bir queryda olish
+        base_qs = Order.objects.select_related("user", "branch").prefetch_related("order_items")
 
         if user.is_superuser or user.role == "ADMIN":
-            return Order.objects.all()
+            return base_qs.all()
         if user.role == "MANAGER":
-            return Order.objects.filter(branch=user.branch)
+            return base_qs.filter(branch=user.branch)
         if user.role == "DISPATCHER":
-            return Order.objects.all()
-        return Order.objects.filter(user=user)
+            return base_qs.all()
+        return base_qs.filter(user=user)
 
 class OrderItemsViewSet(ModelViewSet):
     queryset = OrderItem.objects.all()

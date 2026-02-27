@@ -1,8 +1,12 @@
-from django.core.management.base import BaseCommand
-from django.conf import settings
 import asyncio
 import logging
+import re
 import warnings
+from contextlib import suppress
+
+from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.db import transaction
 from aiogram import Bot, Dispatcher, types
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
@@ -13,8 +17,9 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     WebAppInfo
 )
-from users.models import User,TelegramUser
 from asgiref.sync import sync_to_async
+
+from users.models import User, TelegramUser
 
 # Suppress pydantic warnings
 warnings.filterwarnings(
@@ -23,173 +28,187 @@ warnings.filterwarnings(
     module="pydantic",
 )
 
+# ============== CONSTANTS ==============
+MESSAGES = {
+    "welcome_back": "*Хуш келибсиз, {name}!*\nИловани ишлатишингиз мумкин:",
+    "open_app": "Иловани очиш учун қуйидаги тугмани босинг:",
+    "welcome_new": "*Ifoda Shop*га хуш келибсиз!\nИлтимос, телефон рақамингизни улашинг ёки қўлда киритинг:",
+    "registration_success": "*Рўйхатдан ўтганингиз учун раҳмат!*",
+    "app_ready": "Энди иловани ишлатишингиз мумкин:",
+    "registration_error": "Рўйхатдан ўтишда хатолик юз берди. Илтимос, қайта уриниб кўринг.",
+    "enter_phone": "*Илтимос, телефон рақамингизни* қуйидаги форматда юборинг:\n`+998901234567`",
+    "invalid_phone": "Нотўғри формат. Илтимос, рақамни +998901234567 форматида киритинг",
+}
+
+BUTTONS = {
+    "open_shop": "🏪 Ifoda Shopни очиш",
+    "share_contact": "Рақамни улашиш 📞",
+    "manual_input": "Қўлда киритиш ✍️",
+    "start_command": "Ботни ишга тушириш 🚀",
+}
+
+PHONE_REGEX = re.compile(r"^\+998[0-9]{9}$")
+
 # Initialize dispatcher
 dp = Dispatcher()
 
-@dp.message(CommandStart())
-async def start_handler(message: types.Message):
-    # Check if user already exists
-    user = await sync_to_async(TelegramUser.objects.filter(telegram_id=str(message.from_user.id)).first)()
-    
-    if user:
-        keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    InlineKeyboardButton(
-                        text="🏪 Ifoda Shopни очиш",
-                        web_app=WebAppInfo(url=settings.WEBAPP_URL)
-                    )
-                ]
+
+# ============== HELPER FUNCTIONS ==============
+def get_webapp_keyboard() -> InlineKeyboardMarkup:
+    """WebApp tugmasini qaytaradi"""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=BUTTONS["open_shop"],
+                    web_app=WebAppInfo(url=settings.WEBAPP_URL)
+                )
             ]
-        )
-        # Remove previous keyboard and send new message
-        await message.answer(
-            f"*Хуш келибсиз, {user.first_name}!*\nИловани ишлатишингиз мумкин:",
-            reply_markup=types.ReplyKeyboardRemove(),  # Remove keyboard
-            parse_mode=ParseMode.MARKDOWN
-        )
-        # Send webapp button separately
-        await message.answer(
-            "Иловани очиш учун қуйидаги тугмани босинг:",
-            reply_markup=keyboard,
-            parse_mode=ParseMode.MARKDOWN
-        )
-    else:
-        keyboard = ReplyKeyboardMarkup(
-            keyboard=[
-                [
-                    KeyboardButton(text="Рақамни улашиш 📞", request_contact=True),
-                    KeyboardButton(text="Қўлда киритиш ✍️"),
-                ]
-            ],
-            resize_keyboard=True,
-            one_time_keyboard=True
-        )
-        await message.answer(
-            "*Ifoda Shop*га хуш келибсиз!\nИлтимос, телефон рақамингизни улашинг ёки қўлда киритинг:", 
-            reply_markup=keyboard,
-            parse_mode=ParseMode.MARKDOWN
-        )
+        ]
+    )
 
-@dp.message(lambda msg: msg.contact is not None)
-async def contact_handler(message: types.Message):
-    try:
-        contact = message.contact
-        base_user = await sync_to_async(User.objects.create_user_with_random_password)(
-            phone_number=contact.phone_number,
-            telegram_id=message.from_user.id,
-            first_name=contact.first_name or message.from_user.first_name
-        )
 
-        user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
-            telegram_id=str(message.from_user.id),
+def get_registration_keyboard() -> ReplyKeyboardMarkup:
+    """Ro'yxatdan o'tish tugmalarini qaytaradi"""
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text=BUTTONS["share_contact"], request_contact=True),
+                KeyboardButton(text=BUTTONS["manual_input"]),
+            ]
+        ],
+        resize_keyboard=True,
+        one_time_keyboard=True
+    )
+
+
+def is_valid_phone(phone: str) -> bool:
+    """Telefon raqamini tekshiradi"""
+    return bool(PHONE_REGEX.match(phone))
+
+
+@sync_to_async
+def register_user(telegram_id: int, phone_number: str, first_name: str) -> TelegramUser:
+    """Foydalanuvchini ro'yxatdan o'tkazadi (transaction bilan)"""
+    with transaction.atomic():
+        base_user = User.objects.create_user_with_random_password(
+            phone_number=phone_number,
+            telegram_id=telegram_id,
+            first_name=first_name
+        )
+        user, _ = TelegramUser.objects.get_or_create(
+            telegram_id=str(telegram_id),
             defaults={
-                "phone_number": contact.phone_number,
-                "first_name": contact.first_name or message.from_user.first_name,
-                "user":base_user
-            },
+                "phone_number": phone_number,
+                "first_name": first_name,
+                "user": base_user
+            }
         )
-        
-        keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    InlineKeyboardButton(
-                        text="🏪 Ifoda Shopни очиш",
-                        web_app=WebAppInfo(url=settings.WEBAPP_URL)
-                    )
-                ]
-            ]
-        )
+        return user
 
-        await message.answer(
-            "*Рўйхатдан ўтганингиз учун раҳмат!*",
-            reply_markup=types.ReplyKeyboardRemove(),
-            parse_mode=ParseMode.MARKDOWN
-        )
-        
-        await message.answer(
-            "Энди иловани ишлатишингиз мумкин:",
-            reply_markup=keyboard,
-            parse_mode=ParseMode.MARKDOWN
-        )
-    except Exception as e:
-        await message.answer("Рўйхатдан ўтишда хатолик юз берди. Илтимос, қайта уриниб кўринг.")
-        logging.error(f"Error in contact_handler: {e}")
 
-@dp.message(lambda msg: msg.text == "Қўлда киритиш ✍️")
-async def manual_registration(message: types.Message):
+async def send_success_response(message: types.Message) -> None:
+    """Muvaffaqiyatli ro'yxatdan o'tish xabarlarini yuboradi"""
     await message.answer(
-        "*Илтимос, телефон рақамингизни* қуйидаги форматда юборинг:\n`+998901234567`",
+        MESSAGES["registration_success"],
+        reply_markup=types.ReplyKeyboardRemove(),
+        parse_mode=ParseMode.MARKDOWN
+    )
+    await message.answer(
+        MESSAGES["app_ready"],
+        reply_markup=get_webapp_keyboard(),
         parse_mode=ParseMode.MARKDOWN
     )
 
-@dp.message(lambda msg: msg.text and msg.text.startswith("+998"))
-async def handle_phone_manual(message: types.Message):
-    try:
-        phone_number = message.text.strip()
-        if len(phone_number) != 13:
-            await message.answer("Нотўғри формат. Илтимос, рақамни +998901234567 форматида киритинг")
-            return
-        
-        base_user = await sync_to_async(User.objects.create_user_with_random_password)(
-            phone_number=phone_number,
-            telegram_id=message.from_user.id,
-            first_name=message.from_user.first_name
-        )
 
-        user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
-            telegram_id=message.from_user.id,
-            defaults={
-                "phone_number": phone_number,
-                "first_name": message.from_user.first_name,
-                "user":base_user
-            },
-        )
-        
-        keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    InlineKeyboardButton(
-                        text="🏪 Ifoda Shopни очиш",
-                        web_app=WebAppInfo(url=settings.WEBAPP_URL)
-                    )
-                ]
-            ]
-        )
-        
+async def send_error_response(message: types.Message, error: Exception, handler_name: str) -> None:
+    """Xatolik xabarini yuboradi va log qiladi"""
+    await message.answer(MESSAGES["registration_error"])
+    logging.error(f"Error in {handler_name}: {error}")
+
+
+# ============== HANDLERS ==============
+@dp.message(CommandStart())
+async def start_handler(message: types.Message):
+    """Start komandasi handleri"""
+    user = await sync_to_async(
+        TelegramUser.objects.filter(telegram_id=str(message.from_user.id)).first
+    )()
+
+    if user:
         await message.answer(
-            "*Рўйхатдан ўтганингиз учун раҳмат!*",
+            MESSAGES["welcome_back"].format(name=user.first_name),
             reply_markup=types.ReplyKeyboardRemove(),
             parse_mode=ParseMode.MARKDOWN
         )
         await message.answer(
-            "Энди иловани ишлатишингиз мумкин:",
-            reply_markup=keyboard,
+            MESSAGES["open_app"],
+            reply_markup=get_webapp_keyboard(),
             parse_mode=ParseMode.MARKDOWN
         )
+    else:
+        await message.answer(
+            MESSAGES["welcome_new"],
+            reply_markup=get_registration_keyboard(),
+            parse_mode=ParseMode.MARKDOWN
+        )
+
+
+@dp.message(lambda msg: msg.contact is not None)
+async def contact_handler(message: types.Message):
+    """Kontakt orqali ro'yxatdan o'tish"""
+    try:
+        contact = message.contact
+        await register_user(
+            telegram_id=message.from_user.id,
+            phone_number=contact.phone_number,
+            first_name=contact.first_name or message.from_user.first_name
+        )
+        await send_success_response(message)
     except Exception as e:
-        await message.answer("Рўйхатдан ўтишда хатолик юз берди. Илтимос, қайта уриниб кўринг.")
-        logging.error(f"Error in handle_phone_manual: {e}")
+        await send_error_response(message, e, "contact_handler")
 
-import signal
-from contextlib import suppress
-from aiogram.exceptions import TelegramAPIError
 
+@dp.message(lambda msg: msg.text == BUTTONS["manual_input"])
+async def manual_registration(message: types.Message):
+    """Qo'lda kiritish tugmasi bosilganda"""
+    await message.answer(
+        MESSAGES["enter_phone"],
+        parse_mode=ParseMode.MARKDOWN
+    )
+
+
+@dp.message(lambda msg: msg.text and msg.text.startswith("+998"))
+async def handle_phone_manual(message: types.Message):
+    """Qo'lda telefon raqami kiritilganda"""
+    phone_number = message.text.strip()
+
+    if not is_valid_phone(phone_number):
+        await message.answer(MESSAGES["invalid_phone"])
+        return
+
+    try:
+        await register_user(
+            telegram_id=message.from_user.id,
+            phone_number=phone_number,
+            first_name=message.from_user.first_name
+        )
+        await send_success_response(message)
+    except Exception as e:
+        await send_error_response(message, e, "handle_phone_manual")
+
+
+# ============== COMMAND ==============
 class Command(BaseCommand):
     help = "Starts the Telegram bot in polling mode"
 
     async def shutdown(self, dispatcher: Dispatcher, bot: Bot):
         """Graceful shutdown"""
         self.stdout.write(self.style.WARNING("\nShutting down..."))
-        
-        # Close bot instance
         await bot.session.close()
-        
-        # Close dispatcher
         await dispatcher.stop_polling()
 
     async def handle_async(self, *args, **options):
-        # Configure logging
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -199,26 +218,20 @@ class Command(BaseCommand):
             ]
         )
 
-        # Initialize bot
         bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
         await bot.set_my_commands([
-            types.BotCommand(command="start", description="Botni ishga tushirish 🚀")
+            types.BotCommand(command="start", description=BUTTONS["start_command"])
         ])
-        
+
         self.stdout.write(
             self.style.SUCCESS("Bot started in polling mode...\nPress Ctrl+C to stop")
         )
-        
+
         try:
-            # Start polling
             await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
-            
         except Exception as e:
-            self.stdout.write(
-                self.style.ERROR(f"Bot stopped with error: {e}")
-            )
+            self.stdout.write(self.style.ERROR(f"Bot stopped with error: {e}"))
             logging.error(f"Bot error: {e}")
-            
         finally:
             with suppress(Exception):
                 await self.shutdown(dp, bot)

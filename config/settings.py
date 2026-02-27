@@ -2,6 +2,18 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
+
+
+def get_env_variable(var_name: str, default=None, required: bool = False):
+    """
+    Environment o'zgaruvchisini olish.
+    Agar required=True va o'zgaruvchi yo'q bo'lsa, xato beradi.
+    """
+    value = os.getenv(var_name, default)
+    if required and not value:
+        raise ImproperlyConfigured(f"'{var_name}' environment o'zgaruvchisi sozlanmagan!")
+    return value
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -15,14 +27,15 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Don't run with debug turned on in production!
-SECRET_KEY = os.getenv("SECRET_KEY")
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+SECRET_KEY = get_env_variable("SECRET_KEY", required=True)
+TELEGRAM_BOT_TOKEN = get_env_variable("TELEGRAM_BOT_TOKEN", required=True)
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+# Bo'sh stringlarni filtrlash
+ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()]
 CSRF_TRUSTED_ORIGINS = [
     "https://api.ifoda-shop.uz",
 ]
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if origin.strip()]
 
 # Application definition
 
@@ -59,8 +72,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # CORS - SessionMiddleware dan OLDIN bo'lishi kerak
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",  # CORS middleware
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -105,6 +118,15 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "config.pagination.CustomPagination",
     "PAGE_SIZE": 100,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "200/hour",     # Anonim foydalanuvchilar uchun soatiga 200 ta so'rov
+        "user": "2000/hour",    # Ro'yxatdan o'tgan foydalanuvchilar uchun soatiga 2000 ta
+        "auth": "30/hour",      # Autentifikatsiya endpointlari uchun soatiga 30 ta (brute-force himoya)
+    },
 }
 
 # Unfold Admin (Pretty admin panel) configurations.
@@ -267,4 +289,3 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 CKEDITOR_UPLOAD_PATH = "uploads/"
-DEBUG=True

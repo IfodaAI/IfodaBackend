@@ -16,22 +16,40 @@ from users.models import TelegramUser
 class DiseaseSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Disease
+        fields = ("id", "name", "description", "product", "category")
+
 
 class DiseaseCategorySerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = DiseaseCategory
+        fields = ("id", "title", "slug")
+
 
 class ProductCategorySerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductCategory
+        fields = ("id", "title", "slug")
+
 
 class ProductSubcategorySerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductSubcategory
+        fields = ("id", "title", "slug", "category")
+
 
 class ProductSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Product
+        fields = (
+            "id",
+            "product_id",
+            "name",
+            "description",
+            "spic",
+            "package_code",
+            "category",
+            "image_thumbnail",
+        )
 
     def __init__(self, *args, **kwargs):
         super(ProductSerializer, self).__init__(*args, **kwargs)
@@ -81,7 +99,8 @@ class ProductSerializer(BaseModelSerializer):
 class ProductSKUSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductSKU
-        depth = 0  # default chuqurlik
+        fields = ("id", "is_small_package", "quantity", "price", "unit", "product")
+        depth = 0
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -92,6 +111,8 @@ class ProductSKUSerializer(BaseModelSerializer):
         else:
             self.Meta.depth = 0
 
+
 class ProductImageSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = ProductImage
+        fields = ("id", "product", "image")

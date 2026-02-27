@@ -33,6 +33,8 @@ class UserManager(BaseUserManager):
         if not phone_number:
             raise ValueError("Phone number is required")
 
+        # Telefon raqamini normalizatsiya qilish
+        phone_number = normalize_phone(phone_number)
         password = self.generate_random_password()
 
         user = self.model(

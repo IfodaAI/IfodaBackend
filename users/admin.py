@@ -4,12 +4,13 @@ from django.contrib.auth.models import Group
 from unfold.admin import ModelAdmin
 from django.contrib.auth.admin import UserAdmin
 
+from utils.admin import FullNameAdminMixin
 from .models import User, TelegramUser, Branch, Region, District
 
 admin.site.unregister(Group)
 
 @admin.register(User)
-class UserAdminClass(UserAdmin,ModelAdmin):
+class UserAdminClass(FullNameAdminMixin, UserAdmin, ModelAdmin):
     model = User
 
     list_display = (
@@ -60,17 +61,10 @@ class UserAdminClass(UserAdmin,ModelAdmin):
         }),
     )
 
-    def full_name(self, obj):
-        return f"{obj.first_name} {obj.last_name}"
-
-    full_name.short_description = "To‘liq ism"
 
 @admin.register(TelegramUser)
-class TelegramUserAdminClass(ModelAdmin):
+class TelegramUserAdminClass(FullNameAdminMixin, ModelAdmin):
     list_display = ["id", "full_name", "phone_number"]
-
-    def full_name(self, obj):
-        return f"{obj.first_name} {obj.last_name}"
 
 
 @admin.register(Branch)
