@@ -1,6 +1,10 @@
+import json
+import logging
+
 import requests
 from django.conf import settings
-import json
+
+logger = logging.getLogger(__name__)
 
 
 def send_telegram_message(chat_id: int | str, text: str):
@@ -21,8 +25,7 @@ def send_telegram_message(chat_id: int | str, text: str):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        # log qilish tavsiya etiladi
-        print("Telegram error:", e)
+        logger.error(f"Telegram xabar yuborishda xatolik: {e}")
         return None
 
 def send_telegram_message_with_button(chat_id, text, button_text, webapp_url):
@@ -45,10 +48,14 @@ def send_telegram_message_with_button(chat_id, text, button_text, webapp_url):
         })
     }
 
-    r = requests.post(url, data=payload)
-    result = r.json()
-    # Natijadan message_id qaytadi
-    return result.get("result", {}).get("message_id")
+    try:
+        r = requests.post(url, data=payload, timeout=5)
+        r.raise_for_status()
+        result = r.json()
+        return result.get("result", {}).get("message_id")
+    except requests.RequestException as e:
+        logger.error(f"Telegram tugmali xabar yuborishda xatolik: {e}")
+        return None
 
 def delete_telegram_message(chat_id, message_id):
     token = settings.TELEGRAM_BOT_TOKEN
@@ -58,4 +65,7 @@ def delete_telegram_message(chat_id, message_id):
         "chat_id": chat_id,
         "message_id": message_id
     }
-    requests.post(url, data=params)
+    try:
+        requests.post(url, data=params, timeout=5)
+    except requests.RequestException as e:
+        logger.error(f"Telegram xabar o'chirishda xatolik: {e}")

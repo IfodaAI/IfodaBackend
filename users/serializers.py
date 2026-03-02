@@ -20,26 +20,9 @@ class UserSerializer(BaseModelSerializer):
             "state"
         )  # You cannot use __all__ because otherwise serializer will send user's password upon GET request as well.
 
-class UserRegisterSerializer(BaseModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=6)
+class TelegramWebAppAuthSerializer(serializers.Serializer):
+    init_data = serializers.CharField(required=True)
 
-    class Meta:
-        model = User
-        fields = [
-            "id",
-            "first_name",
-            "last_name",
-            "phone_number",
-            "telegram_id",
-            "password",
-        ]
-
-    def create(self, validated_data):
-        password = validated_data.pop("password")
-        user = User(**validated_data)
-        user.set_password(password)  # parolni hash qiladi
-        user.save()
-        return user
 
 class TelegramUserSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
@@ -51,6 +34,8 @@ class TelegramUserSerializer(BaseModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "photo_url",
+            "language_code",
             "region",
             "district",
             "phone_number",

@@ -70,3 +70,5 @@ staticfiles/
 docker-compose.override.yml
 *.pid
 bot.log
+
+bug-docs/

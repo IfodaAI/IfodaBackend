@@ -91,13 +91,14 @@ def is_valid_phone(phone: str) -> bool:
 def register_user(telegram_id: int, phone_number: str, first_name: str) -> TelegramUser:
     """Foydalanuvchini ro'yxatdan o'tkazadi (transaction bilan)"""
     with transaction.atomic():
-        base_user = User.objects.create_user_with_random_password(
+        base_user = User.objects.create_user(
             phone_number=phone_number,
             telegram_id=telegram_id,
-            first_name=first_name
+            first_name=first_name,
+            role="USER",
         )
         user, _ = TelegramUser.objects.get_or_create(
-            telegram_id=str(telegram_id),
+            telegram_id=telegram_id,
             defaults={
                 "phone_number": phone_number,
                 "first_name": first_name,
@@ -132,7 +133,7 @@ async def send_error_response(message: types.Message, error: Exception, handler_
 async def start_handler(message: types.Message):
     """Start komandasi handleri"""
     user = await sync_to_async(
-        TelegramUser.objects.filter(telegram_id=str(message.from_user.id)).first
+        TelegramUser.objects.filter(telegram_id=message.from_user.id).first
     )()
 
     if user:

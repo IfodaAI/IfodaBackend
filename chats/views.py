@@ -9,7 +9,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 from .models import Room, Message
-from .serializer import RoomSerializer, MessageSerializer
+from .serializers import RoomSerializer, MessageSerializer
 
 class RoomViewSet(ModelViewSet):
     queryset = Room.objects.all()
@@ -54,6 +54,12 @@ class MessageViewSet(ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes=[IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or getattr(user, "role", None) == "ADMIN":
+            return Message.objects.all()
+        return Message.objects.filter(room__owner=user)
 
     def create(self, request: HttpRequest | Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

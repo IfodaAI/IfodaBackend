@@ -1,17 +1,25 @@
+import logging
+
+from django.conf import settings
+
+import requests
 from paytechuz.integrations.django.views import (
     BasePaymeWebhookView,
     BaseClickWebhookView,
 )
-# from paytechuz.integrations.django.models import PaymentTransaction
 from orders.models import Order
-import requests
-from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 class PaymentMixin:
     """Order status yangilash uchun umumiy metod."""
 
     def _update_order_status(self, transaction, status, params=None):
-        order = Order.objects.get(id=transaction.account_id)
+        try:
+            order = Order.objects.get(id=transaction.account_id)
+        except Order.DoesNotExist:
+            logger.error(f"Order topilmadi: account_id={transaction.account_id}")
+            return
         order.status = status
         order.save()
         if status=="PROCESSING":
@@ -27,10 +35,11 @@ Birgalikda yetishtiramiz!✅"""
                         'chat_id': order.user.telegram_id,
                         'text': text,
                         'parse_mode': 'HTML'
-                    }
+                    },
+                    timeout=5,
                 ).json()
             except Exception as e:
-                print('To\'lovda Telegramga xabar yuborishda xatolik yuz berdi: ', e)
+                logger.error(f"To'lovda Telegramga xabar yuborishda xatolik: {e}")
 
 class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
     def before_check_perform_transaction(self, params, account):

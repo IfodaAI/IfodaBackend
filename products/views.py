@@ -7,6 +7,7 @@ from django.db.models import Q
 from users.models import User, TelegramUser, Branch
 from orders.models import Order
 from utils.utils import parse_ids_param
+from utils.permissions import IsAdminOrReadOnly
 
 from .models import (
     Disease,
@@ -30,6 +31,7 @@ from .serializers import (
 class DiseaseViewSet(ModelViewSet):
     queryset = Disease.objects.select_related("category").prefetch_related("product")
     serializer_class = DiseaseSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -51,19 +53,23 @@ class DiseaseViewSet(ModelViewSet):
 class DiseaseCategoryViewSet(ModelViewSet):
     queryset = DiseaseCategory.objects.all()
     serializer_class = DiseaseCategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 class ProductCategoryViewSet(ModelViewSet):
     queryset = ProductCategory.objects.all()
     serializer_class = ProductCategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 class ProductSubcategoryViewSet(ModelViewSet):
     queryset = ProductSubcategory.objects.all()
     serializer_class = ProductSubcategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
     filterset_fields=["category"]
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.select_related("category", "category__category").prefetch_related("product_skus", "product_images")
     serializer_class = ProductSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -101,6 +107,7 @@ class ProductViewSet(ModelViewSet):
 class ProductSKUViewSet(ModelViewSet):
     queryset = ProductSKU.objects.select_related("product", "product__category")
     serializer_class = ProductSKUSerializer
+    permission_classes = [IsAdminOrReadOnly]
     filterset_fields = ["product"]
 
     def get_queryset(self):
@@ -116,6 +123,7 @@ class ProductSKUViewSet(ModelViewSet):
 class ProductImageViewSet(ModelViewSet):
     queryset = ProductImage.objects.all()
     serializer_class = ProductImageSerializer
+    permission_classes = [IsAdminOrReadOnly]
     filterset_fields=["product"]
 
 

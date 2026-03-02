@@ -88,9 +88,9 @@ PHONENUMBER_DB_FORMAT = "E164"  # Forces phone number inputs such as "9989012345
 
 # Simple JWT (Authorization) configurations.
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),  # Access token will last 3 days.
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),  # Refresh token will last 14 days.
-    "ROTATE_REFRESH_TOKENS": True,  # This makes simple_jwt return new refresh token if current one expired.
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),  # Access token 30 daqiqa.
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Refresh token 7 kun.
+    "ROTATE_REFRESH_TOKENS": True,  # Refresh token yangilanadi har safar ishlatilganda.
 }
 
 # Django Spectacular (Swagger generator) configurations.
@@ -100,11 +100,21 @@ SPECTACULAR_SETTINGS = {
 }
 
 # Channels (WebSocket) configurations.
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
-}
+if DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")],
+            },
+        },
+    }
 
 # Django Rest Framework (API) configurations.
 REST_FRAMEWORK = {
@@ -278,14 +288,20 @@ PAYTECHUZ = {
 }
 
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://ifoda-shop.uz")
+TELEGRAM_ADMIN_CHAT_ID = get_env_variable("TELEGRAM_ADMIN_CHAT_ID", required=True)
 
 
-# Django’ga SSL ni nginx orqali kelayotganini bildirish uchun
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SSL va HSTS sozlamalari (faqat production uchun)
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 yil
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
-# Majburiy HTTPS yo‘nalish
-# SECURE_SSL_REDIRECT = True  # (ixtiyoriy)
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_ALLOW_NONIMAGE_FILES = False
+CKEDITOR_IMAGE_BACKEND = "pillow"

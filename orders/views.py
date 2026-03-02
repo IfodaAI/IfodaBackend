@@ -1,8 +1,12 @@
+import logging
+
+from django.db import transaction
 from django.http import HttpRequest
+from django.conf import settings
 
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -15,13 +19,24 @@ from products.models import ProductSKU
 from .models import Order, OrderItem, Delivery
 from .serializers import OrderSerializer, OrderItemSerializer, DeliverySerializer
 from .permissions import OrderPermission
-from django.conf import settings
 
 from utils.utils import get_distance_from_lat_lon_in_km
+
+logger = logging.getLogger(__name__)
+
+# Order status o'tish qoidalari (state machine)
+VALID_STATUS_TRANSITIONS = {
+    "PENDING": ["PROCESSING", "REJECTED"],
+    "PROCESSING": ["IN_TRANSIT", "REJECTED"],
+    "IN_TRANSIT": ["COMPLETED", "REJECTED"],
+    "COMPLETED": [],
+    "REJECTED": [],
+}
 
 class DeliveryViewset(ModelViewSet):
     queryset = Delivery.objects.all()
     serializer_class = DeliverySerializer
+    permission_classes = [OrderPermission]
 
 class OrderViewSet(ModelViewSet):
     queryset = Order.objects.all()
@@ -93,34 +108,35 @@ class OrderViewSet(ModelViewSet):
             )
             order_data["branch"] = nearest_branch["id"]
 
-        # ✅ Order yaratish
+        # ✅ Order yaratish (transaction.atomic bilan)
         order_data["user"] = request.user.id
-        serializer = self.get_serializer(data=order_data)
-        serializer.is_valid(raise_exception=True)
-        order = serializer.save()
+        with transaction.atomic():
+            serializer = self.get_serializer(data=order_data)
+            serializer.is_valid(raise_exception=True)
+            order = serializer.save()
 
-        # ✅ Itemlar yaratish va summani hisoblash (optimizatsiya: bitta query)
-        product_ids = [item["product"] for item in items]
-        products = {str(p.id): p for p in ProductSKU.objects.filter(id__in=product_ids)}
+            # ✅ Itemlar yaratish va summani hisoblash (optimizatsiya: bitta query)
+            product_ids = [item["product"] for item in items]
+            products = {str(p.id): p for p in ProductSKU.objects.filter(id__in=product_ids)}
 
-        total_amount = 0
-        order_items_to_create = []
-        for item in items:
-            product = products.get(str(item["product"]))
-            if product:
-                order_item = OrderItem(order=order, product=product, quantity=item["quantity"])
-                order_item.price = product.price * item["quantity"]
-                order_items_to_create.append(order_item)
-                total_amount += order_item.price
+            total_amount = 0
+            order_items_to_create = []
+            for item in items:
+                product = products.get(str(item["product"]))
+                if product:
+                    order_item = OrderItem(order=order, product=product, quantity=item["quantity"])
+                    order_item.price = product.price * item["quantity"]
+                    order_items_to_create.append(order_item)
+                    total_amount += order_item.price
 
-        # Bulk create for better performance
-        OrderItem.objects.bulk_create(order_items_to_create)
+            # Bulk create for better performance
+            OrderItem.objects.bulk_create(order_items_to_create)
 
-        # ✅ Yakuniy summa
-        order.amount = total_amount
-        order.save(update_fields=["amount"])
+            # ✅ Yakuniy summa
+            order.amount = total_amount
+            order.save(update_fields=["amount"])
 
-        # ✅ To‘lov havolasi
+        # ✅ To’lov havolasi
         payment_link = None
         payment_method = order_data.get("payment_method")
         if order.delivery_method == "DELIVERY" and payment_method in ("payme", "click"):
@@ -136,21 +152,36 @@ class OrderViewSet(ModelViewSet):
         user = self.request.user
         order = self.get_object()
 
-        if user.role == "MANAGER" and order.branch_id != user.branch.branch_id:
-            raise PermissionDenied("Siz faqat o‘z filialingizdagi buyurtmalarni tahrirlashingiz mumkin.")
+        if user.role == "MANAGER":
+            user_branch = getattr(user, "branch", None)
+            if not user_branch or order.branch_id != user_branch.id:
+                raise PermissionDenied("Siz faqat o’z filialingizdagi buyurtmalarni tahrirlashingiz mumkin.")
         if user.role == "DISPATCHER":
-            raise PermissionDenied("Dispetcherlar uchun faqat o‘qish huquqi bor.")
+            raise PermissionDenied("Dispetcherlar uchun faqat o’qish huquqi bor.")
+
+        # Status validation (state machine)
+        new_status = serializer.validated_data.get("status")
+        if new_status and new_status != order.status:
+            allowed = VALID_STATUS_TRANSITIONS.get(order.status, [])
+            if new_status not in allowed:
+                raise ValidationError(
+                    {"status": f"’{order.status}’ dan ‘{new_status}’ ga o’tish mumkin emas. Ruxsat etilgan: {allowed}"}
+                )
+
         serializer.save()
 
     def get_queryset(self):
         user = self.request.user
-        # Optimizatsiya: bog'liq obyektlarni bir queryda olish
+        # Optimizatsiya: bog’liq obyektlarni bir queryda olish
         base_qs = Order.objects.select_related("user", "branch").prefetch_related("order_items")
 
         if user.is_superuser or user.role == "ADMIN":
             return base_qs.all()
         if user.role == "MANAGER":
-            return base_qs.filter(branch=user.branch)
+            user_branch = getattr(user, "branch", None)
+            if not user_branch:
+                return base_qs.none()
+            return base_qs.filter(branch=user_branch)
         if user.role == "DISPATCHER":
             return base_qs.all()
         return base_qs.filter(user=user)
@@ -158,3 +189,4 @@ class OrderViewSet(ModelViewSet):
 class OrderItemsViewSet(ModelViewSet):
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
+    permission_classes = [OrderPermission]

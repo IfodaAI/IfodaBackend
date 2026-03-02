@@ -1,10 +1,8 @@
-import random
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from utils.models import BaseModel
 from .managers import UserManager
-from django.utils import timezone
 
 class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
@@ -35,25 +33,6 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f"{self.first_name + self.last_name if self.first_name or self.last_name else self.phone_number}"
 
-class PasswordResetCode(models.Model):
-    user = models.ForeignKey(
-        "User",
-        on_delete=models.CASCADE,
-        related_name="reset_codes"
-    )
-    message_id = models.CharField(max_length=255,blank=True,null=True)
-    code = models.CharField(max_length=6)
-    expires_at = models.DateTimeField()
-    is_used = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    @staticmethod
-    def generate_code():
-        return str(random.randint(100000, 999999))
-
-    def is_expired(self):
-        return timezone.now() > self.expires_at
-
 class TelegramUser(BaseModel):
     telegram_id = models.BigIntegerField(unique=True)
     user = models.OneToOneField(
@@ -66,6 +45,8 @@ class TelegramUser(BaseModel):
     username = models.CharField(max_length=32, blank=True, null=True)
     first_name = models.CharField(max_length=64, blank=True, null=True)
     last_name = models.CharField(max_length=64, blank=True, null=True)
+    photo_url = models.URLField(blank=True, default="")
+    language_code = models.CharField(max_length=10, blank=True, default="")
     region = models.ForeignKey("Region", on_delete=models.SET_NULL, blank=True, null=True)
     district = models.ForeignKey(
         "District", on_delete=models.SET_NULL, blank=True, null=True

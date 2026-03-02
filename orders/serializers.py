@@ -32,11 +32,7 @@ class OrderSerializer(BaseModelSerializer):
     
     def get_user_fullname(self, obj):
         if obj.user:
-            # Agar custom User modelda full_name bo'lsa
-            if hasattr(obj.user, "get_full_name"):
-                return obj.user.get_full_name()
-            # fallback
-            return f"{obj.user.first_name} {obj.user.last_name}".strip()
+            return obj.user.full_name
         return None
     
     def get_payment_gateway(self, obj):

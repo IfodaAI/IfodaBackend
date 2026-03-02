@@ -1,192 +1,45 @@
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
+from rest_framework.views import APIView
 from django.http import HttpRequest
-from django.utils import timezone
-from datetime import timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.hashers import make_password
+
+
+class AuthRateThrottle(AnonRateThrottle):
+    rate = "30/hour"
 
 from .permissions import PostAndCheckUserOnly
-from .throttles import AuthRateThrottle
-from .models import User, PasswordResetCode, TelegramUser, Branch, Region, District
+from .models import User, TelegramUser, Branch, Region, District
 from .serializers import (
     UserSerializer,
     TelegramUserSerializer,
+    TelegramWebAppAuthSerializer,
     BranchSerializer,
-    UserRegisterSerializer,
     RegionSerializer,
     DistrictSerializer,
 )
-from utils.utils import get_distance_from_lat_lon_in_km, normalize_phone
-from chats.services.telegram import send_telegram_message_with_button, delete_telegram_message
+from .telegram_validator import TelegramInitDataValidator
+from utils.utils import get_distance_from_lat_lon_in_km
+from utils.permissions import IsAdminOrReadOnly
+
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes=[PostAndCheckUserOnly]
 
-    @action(detail=False, methods=["get"], permission_classes=[AllowAny], throttle_classes=[AuthRateThrottle])
-    def get_token(self, request):
-        phone_number = request.GET.get("phone_number")
-
-        # 1️⃣ phone_number majburiy
-        if not phone_number:
-            return Response(
-                {"error": "phone_number is required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # 2️⃣ Telefon raqamini normalizatsiya qilish va bazadan qidirish
-        phone_number = normalize_phone(phone_number)
-        user = self.get_queryset().filter(phone_number=phone_number).last()
-
-        # 3️⃣ Agar topilmasa create qilish
-        if not user:
-            user = User.objects.create_user_with_random_password(phone_number)
-
-        # 4️⃣ Token berish
-        refresh = RefreshToken.for_user(user)
-
-        return Response(
-            {
-                "id": user.id,
-                "full_name": user.full_name,
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-            },
-            status=status.HTTP_200_OK
-        )
-    
-    @action(detail=False, methods=["post"])
-    def register(self, request):
-        serializer = UserRegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            refresh = RefreshToken.for_user(user)
-            return Response(
-                {
-                    "id": user.id,
-                    "full_name": user.full_name,
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                },
-                status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    @action(detail=False, methods=["POST"], url_path="get-verification-code", permission_classes=[PostAndCheckUserOnly], throttle_classes=[AuthRateThrottle])
-    def get_verification_code(self, request):
-        phone = request.data.get("phone_number")
-
-        if not phone:
-            return Response(
-                {"detail": "phone_number majburiy"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            user = User.objects.get(phone_number=phone)
-        except User.DoesNotExist:
-            return Response(
-                {"detail": "Foydalanuvchi topilmadi"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        if not user.telegram_id:
-            return Response(
-                {"detail": "User telegram bilan bog‘lanmagan"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        code = PasswordResetCode.generate_code()
-
-        prc=PasswordResetCode.objects.create(
-            user=user,
-            code=code,
-            expires_at=timezone.now() + timedelta(minutes=5)
-        )
-
-        # send_telegram_message(
-        #     chat_id=user.telegram_id,
-        #     text=f"🔐 Tasdiqlash kodi: <code>{code}</code>\n\nKod 5 daqiqa amal qiladi."
-        # )
-
-        msg_id = send_telegram_message_with_button(
-            chat_id=user.telegram_id,
-            text=f"🔐 Tasdiqlash kodi: <code>{code}</code>\n\nKod 5 daqiqa amal qiladi.",
-            button_text="➡️ Parol yangilash sahifasiga o‘tish",
-            webapp_url=f"https://ifoda-market.netlify.app/reset-psw?code={str(code)}&phone_number={phone}",
-        )
-        prc.message_id=msg_id
-        prc.save()
-
-        return Response(
-            {"detail": "Verification kodi telegramga yuborildi"},
-            status=status.HTTP_200_OK
-        )
-    
-    @action(detail=False, methods=["post"], url_path="reset-password")
-    def reset_password(self, request):
-        phone = request.data.get("phone_number")
-        code = request.data.get("code")
-        new_password = request.data.get("new_password")
-
-        if not all([phone, code, new_password]):
-            return Response(
-                {"detail": "Barcha fieldlar majburiy"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            user = User.objects.get(phone_number=phone)
-        except User.DoesNotExist:
-            return Response(
-                {"detail": "User topilmadi"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        reset_code = (
-            PasswordResetCode.objects
-            .filter(user=user, code=code, is_used=False)
-            .order_by("-created_at")
-            .first()
-        )
-
-        if not reset_code:
-            return Response(
-                {"detail": "Kod noto‘g‘ri"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if reset_code.is_expired():
-            return Response(
-                {"detail": "Kod eskirgan"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        user.password = make_password(new_password)
-        user.save(update_fields=["password"])
-
-        reset_code.is_used = True
-        if reset_code.message_id:
-            delete_telegram_message(user.telegram_id, reset_code.message_id)
-        reset_code.save(update_fields=["is_used"])
-
-        return Response(
-            {"detail": "Parol muvaffaqiyatli o‘zgartirildi"},
-            status=status.HTTP_200_OK
-        )
 
 class TelegramUserViewSet(ModelViewSet):
     queryset = TelegramUser.objects.all()
     serializer_class = TelegramUserSerializer
     permission_classes=[PostAndCheckUserOnly]
-    
+
     @action(detail=False, methods=["get"])
     def check_user(self, request:HttpRequest|Request):
         telegram_id=request.GET.get("telegram_id")
@@ -202,6 +55,7 @@ class TelegramUserViewSet(ModelViewSet):
 class BranchViewSet(ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
     @action(detail=False, methods=["get"])
     def get_nearest_branches(self, request: HttpRequest | Request):
@@ -241,8 +95,146 @@ class BranchViewSet(ModelViewSet):
 class RegionViewSet(ModelViewSet):
     queryset = Region.objects.all()
     serializer_class = RegionSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 class DistrictViewSet(ModelViewSet):
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
+    permission_classes = [IsAdminOrReadOnly]
     filterset_fields=["region"]
+
+
+class TelegramWebAppAuthView(APIView):
+    """
+    POST /api/auth/telegram/
+    Body: { "init_data": "<raw initData string from Telegram.WebApp.initData>" }
+    Returns: { "access_token", "refresh_token", "user", "is_new_user" }
+
+    Faqat role="USER" bo'lgan foydalanuvchilar uchun ishlaydi.
+    """
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
+
+    def post(self, request):
+        serializer = TelegramWebAppAuthSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        init_data = serializer.validated_data["init_data"]
+
+        validator = TelegramInitDataValidator()
+        try:
+            validated_data = validator.validate(init_data)
+        except ValueError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        tg_user = validated_data.get("user", {})
+        telegram_id = tg_user.get("id")
+
+        if not telegram_id:
+            return Response(
+                {"error": "User data not found in initData"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # TelegramUser ni yangilash yoki yaratish
+        tg_user_obj, _ = TelegramUser.objects.update_or_create(
+            telegram_id=telegram_id,
+            defaults={
+                "first_name": tg_user.get("first_name", ""),
+                "last_name": tg_user.get("last_name", ""),
+                "username": tg_user.get("username", ""),
+                "photo_url": tg_user.get("photo_url", ""),
+                "language_code": tg_user.get("language_code", ""),
+            },
+        )
+
+        # User ni telegram_id orqali topish
+        user = User.objects.filter(telegram_id=telegram_id).first()
+        is_new_user = False
+
+        if user:
+            # Mavjud user — faqat USER rolida bo'lsa ruxsat berish
+            if user.role != "USER":
+                return Response(
+                    {"error": "Bu auth faqat USER roli uchun."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        else:
+            # Yangi user yaratish — TelegramUser da phone_number bo'lishi kerak
+            if tg_user_obj.phone_number:
+                user = User.objects.create_user(
+                    phone_number=str(tg_user_obj.phone_number),
+                    telegram_id=telegram_id,
+                    first_name=tg_user.get("first_name", ""),
+                    role="USER",
+                )
+                is_new_user = True
+            else:
+                return Response(
+                    {
+                        "error": "Phone number not found. Please register via Telegram bot first.",
+                        "telegram_user": TelegramUserSerializer(tg_user_obj).data,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # TelegramUser ni User bilan bog'lash (agar bog'lanmagan bo'lsa)
+        if not tg_user_obj.user:
+            tg_user_obj.user = user
+            tg_user_obj.save(update_fields=["user"])
+
+        # User ma'lumotlarini yangilash
+        updated_fields = []
+        if tg_user.get("first_name") and not user.first_name:
+            user.first_name = tg_user["first_name"]
+            updated_fields.append("first_name")
+        if tg_user.get("last_name") and not user.last_name:
+            user.last_name = tg_user["last_name"]
+            updated_fields.append("last_name")
+        if updated_fields:
+            user.save(update_fields=updated_fields)
+
+        # JWT token berish
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh),
+            "user": {
+                "id": str(user.id),
+                "telegram_id": user.telegram_id,
+                "phone_number": str(user.phone_number),
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "full_name": user.full_name,
+                "role": user.role,
+            },
+            "is_new_user": is_new_user,
+        })
+
+
+class MeView(APIView):
+    """GET /api/auth/me/ — JWT bilan himoyalangan"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        data = {
+            "id": str(user.id),
+            "telegram_id": user.telegram_id,
+            "phone_number": str(user.phone_number),
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "full_name": user.full_name,
+            "role": user.role,
+            "is_active": user.is_active,
+        }
+        # TelegramUser ma'lumotlarini qo'shish
+        tg_user = TelegramUser.objects.filter(telegram_id=user.telegram_id).first()
+        if tg_user:
+            data["photo_url"] = tg_user.photo_url
+            data["language_code"] = tg_user.language_code
+            data["username"] = tg_user.username
+        return Response(data)
