@@ -12,7 +12,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class AuthRateThrottle(AnonRateThrottle):
-    rate = "30/hour"
+    rate = "60/hour"
 
 from .permissions import PostAndCheckUserOnly
 from .models import User, TelegramUser, Branch, Region, District
