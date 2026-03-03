@@ -20,6 +20,7 @@ from aiogram.types import (
 from asgiref.sync import sync_to_async
 
 from users.models import User, TelegramUser
+from users.management.commands.broadcast import router as broadcast_router
 
 # Suppress pydantic warnings
 warnings.filterwarnings(
@@ -51,6 +52,7 @@ PHONE_REGEX = re.compile(r"^\+998[0-9]{9}$")
 
 # Initialize dispatcher
 dp = Dispatcher()
+dp.include_router(broadcast_router)
 
 
 # ============== HELPER FUNCTIONS ==============
@@ -221,7 +223,8 @@ class Command(BaseCommand):
 
         bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
         await bot.set_my_commands([
-            types.BotCommand(command="start", description=BUTTONS["start_command"])
+            types.BotCommand(command="start", description=BUTTONS["start_command"]),
+            types.BotCommand(command="admin", description="Admin panel"),
         ])
 
         self.stdout.write(
