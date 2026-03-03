@@ -288,7 +288,11 @@ PAYTECHUZ = {
 }
 
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://ifoda-shop.uz")
-TELEGRAM_ADMIN_CHAT_ID = get_env_variable("TELEGRAM_ADMIN_CHAT_ID", required=True)
+TG_ADMINS_BROADCAST = [
+    admin_id.strip()
+    for admin_id in os.getenv("TG_ADMINS_BROADCAST", "").split(",")
+    if admin_id.strip()
+]
 
 
 # SSL va HSTS sozlamalari (faqat production uchun)
