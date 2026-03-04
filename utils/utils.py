@@ -46,6 +46,28 @@ def get_distance_from_lat_lon_in_km(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
 
+def nearest_branches_func(branch_data, user_lat, user_lon):
+        branches = [
+            {
+                "id": branch["id"],
+                "name": branch["name"],
+                "phone_number": str(branch["phone_number"]),
+                "latitude": branch["latitude"],
+                "longitude": branch["longitude"],
+                "distance": round(
+                    get_distance_from_lat_lon_in_km(
+                        user_lat, user_lon, branch["latitude"], branch["longitude"]
+                    ),
+                    2,
+                ),
+            }
+            for branch in branch_data
+        ]
+
+        # Masofaga qarab saralash va 5 ta eng yaqinini olish
+        nearest = sorted(branches, key=lambda x: x["distance"])[:5]
+        return nearest
+
 
 def normalize_phone(phone):
     """Telefon raqamdan bo'sh joy, + va - belgilarini olib tashlab, faqat raqamlarni qaytaradi"""
