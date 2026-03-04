@@ -25,7 +25,7 @@ from .serializers import (
     DistrictSerializer,
 )
 from .telegram_validator import TelegramInitDataValidator
-from utils.utils import get_distance_from_lat_lon_in_km, nearest_branches_func
+from utils.utils import nearest_branches_func
 from utils.permissions import IsAdminOrReadOnly
 
 
