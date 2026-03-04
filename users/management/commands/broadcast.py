@@ -43,9 +43,9 @@ CANCEL = "broadcast_cancel"
 # ============== HELPER FUNCTIONS ==============
 @sync_to_async
 def is_admin(telegram_id: int) -> bool:
-    """Admin tekshiruvi: TELEGRAM_ADMIN_CHAT_ID + bazadan role tekshirish"""
-    admin_chat_id = getattr(settings, "TELEGRAM_ADMIN_CHAT_ID", None)
-    if admin_chat_id and str(telegram_id) == str(admin_chat_id):
+    """Admin tekshiruvi: TG_ADMINS_BROADCAST ro'yxati + bazadan role tekshirish"""
+    admin_ids = getattr(settings, "TG_ADMINS_BROADCAST", [])
+    if str(telegram_id) in admin_ids:
         return True
     return User.objects.filter(telegram_id=telegram_id, role="ADMIN").exists()
 
