@@ -1,4 +1,6 @@
+import hashlib
 import logging
+import time
 
 from django.conf import settings
 
@@ -12,7 +14,82 @@ from orders.models import Order
 logger = logging.getLogger(__name__)
 
 class PaymentMixin:
-    """Order status yangilash uchun umumiy metod."""
+    """Order status yangilash va fiskalatsiya uchun umumiy metodlar."""
+
+    def _build_fiscal_items(self, order):
+        """Payme va Click uchun umumiy fiskal mahsulot ro'yxatini yaratadi."""
+        items = []
+        for item in order.order_items.all():
+            total_price = int(item.price * item.quantity * 100)  # tiyinlarda
+            vat_percent = 12
+            vat_amount = int(total_price * vat_percent / (100 + vat_percent))
+            items.append({
+                "title": item.product.product_name,
+                "price": int(item.price * 100),
+                "count": item.quantity,
+                "code": item.product.spic,
+                "vat_percent": vat_percent,
+                "package_code": item.product.package_code,
+                "total_price": total_price,
+                "vat_amount": vat_amount,
+            })
+        return items
+
+    def _submit_click_fiscal(self, transaction, order):
+        """Click fiskal API ga mahsulot ma'lumotlarini yuboradi."""
+        click_cfg = settings.PAYTECHUZ.get("CLICK", {})
+        merchant_user_id = click_cfg.get("MERCHANT_USER_ID")
+        secret_key = click_cfg.get("SECRET_KEY")
+        service_id = click_cfg.get("SERVICE_ID")
+
+        if not all([merchant_user_id, secret_key, service_id]):
+            logger.error("Click fiskal: CLICK sozlamalari to'liq emas")
+            return
+
+        timestamp = str(int(time.time()))
+        digest = hashlib.sha1(f"{timestamp}{secret_key}".encode()).hexdigest()
+        auth_header = f"{merchant_user_id}:{digest}:{timestamp}"
+
+        fiscal_items = self._build_fiscal_items(order)
+        items_payload = []
+        for fi in fiscal_items:
+            items_payload.append({
+                "Name": fi["title"],
+                "SPIC": fi["code"],
+                "PackageCode": fi["package_code"],
+                "Price": fi["total_price"],
+                "Amount": fi["count"],
+                "VATPercent": fi["vat_percent"],
+                "VAT": fi["vat_amount"],
+            })
+
+        total_amount = sum(fi["total_price"] for fi in fiscal_items)
+        payload = {
+            "service_id": int(service_id),
+            "payment_id": int(transaction.transaction_id),
+            "items": items_payload,
+            "received_ecash": total_amount,
+            "received_cash": 0,
+            "received_card": 0,
+        }
+
+        try:
+            response = requests.post(
+                url="https://api.click.uz/v2/merchant/payment/ofd_data/submit_items",
+                json=payload,
+                headers={
+                    "Auth": auth_header,
+                    "Content-Type": "application/json",
+                },
+                timeout=10,
+            )
+            result = response.json()
+            if result.get("error_code", -1) != 0:
+                logger.error(f"Click fiskal xatolik: {result}")
+            else:
+                logger.info(f"Click fiskal muvaffaqiyatli: payment_id={transaction.transaction_id}")
+        except Exception as e:
+            logger.error(f"Click fiskal API ga so'rov yuborishda xatolik: {e}")
 
     def _update_order_status(self, transaction, status, params=None):
         try:
@@ -45,19 +122,18 @@ class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
     def before_check_perform_transaction(self, params, account):
         order_id = params["account"]["order_id"]
         order = Order.objects.get(id=order_id)
+        fiscal_items = self._build_fiscal_items(order)
         data = {"allow": True, "detail": {"receipt_type": 0, "items": []}}
-        for item in order.order_items.all():
-            data["detail"]["items"].append(
-                {
-                    "discount": 0,
-                    "title": item.product.product_name,
-                    "price": item.price * 100,  # tiyinlarda
-                    "count": 1,
-                    "code": "03105001001000000",
-                    "vat_percent": 12,
-                    "package_code": "1248694",
-                }
-            )
+        for fi in fiscal_items:
+            data["detail"]["items"].append({
+                "discount": 0,
+                "title": fi["title"],
+                "price": fi["price"],
+                "count": fi["count"],
+                "code": fi["code"],
+                "vat_percent": fi["vat_percent"],
+                "package_code": fi["package_code"],
+            })
         return data
 
     def _check_perform_transaction(self, params):
@@ -75,6 +151,11 @@ class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
 class ClickWebhookView(PaymentMixin, BaseClickWebhookView):
     def successfully_payment(self, params, transaction):
         self._update_order_status(transaction, "PROCESSING", params)
+        try:
+            order = Order.objects.get(id=transaction.account_id)
+            self._submit_click_fiscal(transaction, order)
+        except Order.DoesNotExist:
+            logger.error(f"Click fiskal: Order topilmadi: account_id={transaction.account_id}")
 
     def cancelled_payment(self, params, transaction):
         self._update_order_status(transaction, "REJECTED", params)
