@@ -15,6 +15,7 @@ from asgiref.sync import sync_to_async
 
 from django.conf import settings
 
+from users.management.commands.keyboards import get_webapp_inline_keyboard
 from users.models import User, TelegramUser, Region
 
 logger = logging.getLogger(__name__)
@@ -450,3 +451,13 @@ async def broadcast_confirmed(callback: CallbackQuery, state: FSMContext, bot: B
         parse_mode=ParseMode.HTML,
     )
     await state.clear()
+
+
+@router.message(F.text == "🌱 Онлайн Агроном")
+async def send_user_web_app(message: types.Message):
+    await message.answer(
+        "Иловани ишлатишингиз мумкин:",
+        reply_markup=get_webapp_inline_keyboard(),
+        parse_mode=ParseMode.MARKDOWN,
+    )
+

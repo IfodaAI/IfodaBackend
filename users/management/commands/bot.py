@@ -13,12 +13,11 @@ from aiogram.filters import CommandStart
 from aiogram.types import (
     KeyboardButton,
     ReplyKeyboardMarkup,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    WebAppInfo
+    WebAppInfo,
 )
 from asgiref.sync import sync_to_async
 
+from users.management.commands.keyboards import get_main_keyboard
 from users.models import User, TelegramUser
 from users.management.commands.broadcast import router as broadcast_router
 
@@ -31,7 +30,7 @@ warnings.filterwarnings(
 
 # ============== CONSTANTS ==============
 MESSAGES = {
-    "welcome_back": "*Хуш келибсиз, {name}!*\nИловани ишлатишингиз мумкин:",
+    "welcome_back": "*Хуш келибсиз, {name}!*\n",
     "open_app": "Иловани очиш учун қуйидаги тугмани босинг:",
     "welcome_new": "*Ifoda Shop*га хуш келибсиз!\nИлтимос, телефон рақамингизни улашинг ёки қўлда киритинг:",
     "registration_success": "*Рўйхатдан ўтганингиз учун раҳмат!*",
@@ -42,7 +41,12 @@ MESSAGES = {
 }
 
 BUTTONS = {
-    "open_shop": "🏪 Ifoda Shopни очиш",
+    "open_shop": "🏪 Ifoda Shop",
+    "online_agronom": "🌱 Онлайн Агроном",
+    "nearest_branches": "📍 Яқин атрофдаги филиалларимиз",
+    "help": "❓ Ёрдам",
+    "change_language": "🌐 Тилни танлаш",
+    "about_us": "ℹ️ Биз ҳақимизда",
     "share_contact": "Рақамни улашиш 📞",
     "manual_input": "Қўлда киритиш ✍️",
     "start_command": "Ботни ишга тушириш 🚀",
@@ -56,18 +60,6 @@ dp.include_router(broadcast_router)
 
 
 # ============== HELPER FUNCTIONS ==============
-def get_webapp_keyboard() -> InlineKeyboardMarkup:
-    """WebApp tugmasini qaytaradi"""
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text=BUTTONS["open_shop"],
-                    web_app=WebAppInfo(url=settings.WEBAPP_URL)
-                )
-            ]
-        ]
-    )
 
 
 def get_registration_keyboard() -> ReplyKeyboardMarkup:
@@ -114,12 +106,7 @@ async def send_success_response(message: types.Message) -> None:
     """Muvaffaqiyatli ro'yxatdan o'tish xabarlarini yuboradi"""
     await message.answer(
         MESSAGES["registration_success"],
-        reply_markup=types.ReplyKeyboardRemove(),
-        parse_mode=ParseMode.MARKDOWN
-    )
-    await message.answer(
-        MESSAGES["app_ready"],
-        reply_markup=get_webapp_keyboard(),
+        reply_markup=get_main_keyboard(),
         parse_mode=ParseMode.MARKDOWN
     )
 
@@ -141,12 +128,7 @@ async def start_handler(message: types.Message):
     if user:
         await message.answer(
             MESSAGES["welcome_back"].format(name=user.first_name),
-            reply_markup=types.ReplyKeyboardRemove(),
-            parse_mode=ParseMode.MARKDOWN
-        )
-        await message.answer(
-            MESSAGES["open_app"],
-            reply_markup=get_webapp_keyboard(),
+            reply_markup=get_main_keyboard(),
             parse_mode=ParseMode.MARKDOWN
         )
     else:
