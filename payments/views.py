@@ -24,12 +24,12 @@ class PaymentMixin:
             vat_percent = 12
             vat_amount = int(total_price * vat_percent / (100 + vat_percent))
             items.append({
-                "title": item.product.product_name,
+                "title": item.product.product.product_name,
                 "price": int(item.price * 100),
                 "count": item.quantity,
-                "code": item.product.spic,
+                "code": item.product.product.spic,
                 "vat_percent": vat_percent,
-                "package_code": item.product.package_code,
+                "package_code": item.product.product.package_code,
                 "total_price": total_price,
                 "vat_amount": vat_amount,
             })
