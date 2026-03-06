@@ -69,7 +69,7 @@ class PaymentMixin:
         total_amount = sum(fi["total_price"] for fi in fiscal_items)
         payload = {
             "service_id": int(service_id),
-            "payment_id": int(transaction.transaction_id),
+            "click_paydoc_id": int(transaction.transaction_id),
             "items": items_payload,
             "received_ecash": total_amount,
             "received_cash": 0,
