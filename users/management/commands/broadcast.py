@@ -460,6 +460,3 @@ async def send_user_web_app(message: types.Message):
         reply_markup=get_webapp_inline_keyboard(),
         parse_mode=ParseMode.MARKDOWN,
     )
-
-
-
