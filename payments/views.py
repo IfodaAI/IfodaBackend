@@ -10,6 +10,7 @@ from paytechuz.integrations.django.views import (
     BaseClickWebhookView,
 )
 from orders.models import Order
+from payments.bot import send_payment_success_message
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +28,15 @@ class PaymentMixin:
                 "title": item.product.product_name,
                 "price": int(item.price * 100),
                 "count": item.quantity,
-                "code": item.product.spic,
+                "code": item.product.product.spic,
                 "vat_percent": vat_percent,
-                "package_code": item.product.package_code,
+                "package_code": item.product.product.package_code,
                 "total_price": total_price,
                 "vat_amount": vat_amount,
             })
         return items
 
-    def _submit_click_fiscal(self, transaction, order):
+    def _submit_click_fiscal(self, transaction, order,params):
         """Click fiskal API ga mahsulot ma'lumotlarini yuboradi."""
         click_cfg = settings.PAYTECHUZ.get("CLICK", {})
         merchant_user_id = click_cfg.get("MERCHANT_USER_ID")
@@ -61,26 +62,33 @@ class PaymentMixin:
                 "Amount": fi["count"],
                 "VATPercent": fi["vat_percent"],
                 "VAT": fi["vat_amount"],
+                "CommissionInfo": {
+                    "TIN": settings.TIN,
+                },
             })
 
         total_amount = sum(fi["total_price"] for fi in fiscal_items)
         payload = {
             "service_id": int(service_id),
-            "payment_id": int(transaction.transaction_id),
+            "payment_id": int(params.get('click_paydoc_id')),
             "items": items_payload,
             "received_ecash": total_amount,
             "received_cash": 0,
             "received_card": 0,
         }
 
+        url = "https://api.click.uz/v2/merchant/payment/ofd_data/submit_items"
+        req_headers = {
+            "Auth": auth_header,
+            "Accept":"application/json",
+            "Content-Type": "application/json",
+        }
+
         try:
             response = requests.post(
-                url="https://api.click.uz/v2/merchant/payment/ofd_data/submit_items",
+                url=url,
                 json=payload,
-                headers={
-                    "Auth": auth_header,
-                    "Content-Type": "application/json",
-                },
+                headers=req_headers,
                 timeout=10,
             )
             result = response.json()
@@ -99,24 +107,8 @@ class PaymentMixin:
             return
         order.status = status
         order.save()
-        if status=="PROCESSING":
-            text = """To'lov muvaffaqiyatli amalga oshildi ✅
-Buyurtma 24 soat ichida yetkazib beriladi.
-Ishonchingiz uchun minnatdormiz
-IFODA kompaniyasini tanlaganingizdan mamnunmiz
-Birgalikda yetishtiramiz!✅"""
-            try:
-                requests.post(
-                    url=f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage',
-                    data={
-                        'chat_id': order.user.telegram_id,
-                        'text': text,
-                        'parse_mode': 'HTML'
-                    },
-                    timeout=5,
-                ).json()
-            except Exception as e:
-                logger.error(f"To'lovda Telegramga xabar yuborishda xatolik: {e}")
+        if status == "PROCESSING":
+            send_payment_success_message(order.user.telegram_id)
 
 class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
     def before_check_perform_transaction(self, params, account):
@@ -153,7 +145,7 @@ class ClickWebhookView(PaymentMixin, BaseClickWebhookView):
         self._update_order_status(transaction, "PROCESSING", params)
         try:
             order = Order.objects.get(id=transaction.account_id)
-            self._submit_click_fiscal(transaction, order)
+            self._submit_click_fiscal(transaction, order,params)
         except Order.DoesNotExist:
             logger.error(f"Click fiskal: Order topilmadi: account_id={transaction.account_id}")
 

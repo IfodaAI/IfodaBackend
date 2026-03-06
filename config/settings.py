@@ -281,12 +281,12 @@ PAYTECHUZ = {
         "MERCHANT_USER_ID": os.getenv("CLICK_MERCHANT_USER_ID"),
         "SECRET_KEY": os.getenv("CLICK_SECRET_KEY"),
         "ACCOUNT_MODEL": "orders.models.Order",
-        "ACCOUNT_FIELD": "order_id",
         "COMMISSION_PERCENT": 0.0,
         "IS_TEST_MODE": os.getenv("CLICK_TEST_MODE", "False").lower() == "true",
     },
 }
 
+TIN = os.getenv("TIN", "206019226")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://ifoda-shop.uz")
 TG_ADMINS_BROADCAST = [
     admin_id.strip()
