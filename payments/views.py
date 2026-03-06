@@ -64,6 +64,9 @@ class PaymentMixin:
                 "Amount": fi["count"],
                 "VATPercent": fi["vat_percent"],
                 "VAT": fi["vat_amount"],
+                "CommissionInfo": {
+                    "TIN": settings.TIN,
+                },
             })
 
         total_amount = sum(fi["total_price"] for fi in fiscal_items)

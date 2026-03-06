@@ -286,6 +286,7 @@ PAYTECHUZ = {
     },
 }
 
+TIN = os.getenv("TIN", "206019226")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://ifoda-shop.uz")
 TG_ADMINS_BROADCAST = [
     admin_id.strip()
