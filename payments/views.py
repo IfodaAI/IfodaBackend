@@ -1,9 +1,6 @@
 import hashlib
-import json
 import logging
-import os
 import time
-from datetime import datetime
 
 from django.conf import settings
 
@@ -13,6 +10,7 @@ from paytechuz.integrations.django.views import (
     BaseClickWebhookView,
 )
 from orders.models import Order
+from payments.bot import send_payment_success_message
 
 logger = logging.getLogger(__name__)
 
@@ -94,24 +92,6 @@ class PaymentMixin:
                 timeout=10,
             )
             result = response.json()
-
-            # Log to file
-            log_dir = os.path.join(settings.BASE_DIR, "logs")
-            os.makedirs(log_dir, exist_ok=True)
-            log_file = os.path.join(log_dir, "click_fiscal.log")
-            with open(log_file, "a", encoding="utf-8") as f:
-                f.write(f"\n{'='*80}\n")
-                f.write(f"[{datetime.now().isoformat()}]\n")
-                f.write(f"--- REQUEST ---\n")
-                f.write(f"URL: {url}\n")
-                f.write(f"Headers: {json.dumps(req_headers, ensure_ascii=False, indent=2)}\n")
-                f.write(f"Payload: {json.dumps(payload, ensure_ascii=False, indent=2)}\n")
-                f.write(f"--- RESPONSE ---\n")
-                f.write(f"Status: {response.status_code}\n")
-                f.write(f"Headers: {json.dumps(dict(response.headers), ensure_ascii=False, indent=2)}\n")
-                f.write(f"Body: {json.dumps(result, ensure_ascii=False, indent=2)}\n")
-                f.write(f"{'='*80}\n")
-
             if result.get("error_code", -1) != 0:
                 logger.error(f"Click fiskal xatolik: {result}")
             else:
@@ -127,24 +107,8 @@ class PaymentMixin:
             return
         order.status = status
         order.save()
-        if status=="PROCESSING":
-            text = """To'lov muvaffaqiyatli amalga oshildi ✅
-Buyurtma 24 soat ichida yetkazib beriladi.
-Ishonchingiz uchun minnatdormiz
-IFODA kompaniyasini tanlaganingizdan mamnunmiz
-Birgalikda yetishtiramiz!✅"""
-            try:
-                requests.post(
-                    url=f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage',
-                    data={
-                        'chat_id': order.user.telegram_id,
-                        'text': text,
-                        'parse_mode': 'HTML'
-                    },
-                    timeout=5,
-                ).json()
-            except Exception as e:
-                logger.error(f"To'lovda Telegramga xabar yuborishda xatolik: {e}")
+        if status == "PROCESSING":
+            send_payment_success_message(order.user.telegram_id)
 
 class PaymeWebhookView(PaymentMixin, BasePaymeWebhookView):
     def before_check_perform_transaction(self, params, account):
