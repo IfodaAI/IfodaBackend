@@ -11,8 +11,7 @@ def send_payment_success_message(telegram_id):
     text = (
         "To'lov muvaffaqiyatli amalga oshildi ✅ \n"
         "Buyurtma 24 soat ichida yetkazib beriladi 🚕\n\n"
-        "<b>IFODA</b> kompaniyasini tanlaganingizdan mamnunmiz. \n"
-        "🌱 <b>Birgalikda yetishtiramiz!</b>"
+        "🌱 <b>IFODA</b> - <b>Birgalikda yetishtiramiz!</b>"
     )
     try:
         requests.post(
