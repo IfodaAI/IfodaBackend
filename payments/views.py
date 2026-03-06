@@ -38,7 +38,7 @@ class PaymentMixin:
             })
         return items
 
-    def _submit_click_fiscal(self, transaction, order):
+    def _submit_click_fiscal(self, transaction, order,params):
         """Click fiskal API ga mahsulot ma'lumotlarini yuboradi."""
         click_cfg = settings.PAYTECHUZ.get("CLICK", {})
         merchant_user_id = click_cfg.get("MERCHANT_USER_ID")
@@ -69,7 +69,7 @@ class PaymentMixin:
         total_amount = sum(fi["total_price"] for fi in fiscal_items)
         payload = {
             "service_id": int(service_id),
-            "payment_id": int(transaction.account_id),
+            "payment_id": int(params.get('click_paydoc_id')),
             "items": items_payload,
             "received_ecash": total_amount,
             "received_cash": 0,
@@ -178,7 +178,7 @@ class ClickWebhookView(PaymentMixin, BaseClickWebhookView):
         self._update_order_status(transaction, "PROCESSING", params)
         try:
             order = Order.objects.get(id=transaction.account_id)
-            self._submit_click_fiscal(transaction, order)
+            self._submit_click_fiscal(transaction, order,params)
         except Order.DoesNotExist:
             logger.error(f"Click fiskal: Order topilmadi: account_id={transaction.account_id}")
 
