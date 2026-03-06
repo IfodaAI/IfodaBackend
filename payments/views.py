@@ -79,6 +79,7 @@ class PaymentMixin:
         url = "https://api.click.uz/v2/merchant/payment/ofd_data/submit_items"
         req_headers = {
             "Auth": auth_header,
+            "Accept":"application/json",
             "Content-Type": "application/json",
         }
 
