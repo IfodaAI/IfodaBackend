@@ -33,7 +33,7 @@ class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes=[PostAndCheckUserOnly]
-
+    filterset_fields=["role"]
 
 class TelegramUserViewSet(ModelViewSet):
     queryset = TelegramUser.objects.all()
@@ -71,26 +71,6 @@ class BranchViewSet(ModelViewSet):
         # Faqat kerakli maydonlarni olish (optimizatsiya)
         branch_data = Branch.objects.values("id", "name", "phone_number", "latitude", "longitude")
         nearest=nearest_branches_func(branch_data, user_lat, user_lon)
-
-        # branches = [
-        #     {
-        #         "id": branch["id"],
-        #         "name": branch["name"],
-        #         "phone_number": str(branch["phone_number"]),
-        #         "latitude": branch["latitude"],
-        #         "longitude": branch["longitude"],
-        #         "distance": round(
-        #             get_distance_from_lat_lon_in_km(
-        #                 user_lat, user_lon, branch["latitude"], branch["longitude"]
-        #             ),
-        #             2,
-        #         ),
-        #     }
-        #     for branch in branch_data
-        # ]
-
-        # # Masofaga qarab saralash va 5 ta eng yaqinini olish
-        # nearest = sorted(branches, key=lambda x: x["distance"])[:5]
         return Response(nearest)
 
 class RegionViewSet(ModelViewSet):
