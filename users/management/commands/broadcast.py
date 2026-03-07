@@ -14,8 +14,9 @@ from aiogram.types import (
 from asgiref.sync import sync_to_async
 
 from django.conf import settings
+from aiogram.types import FSInputFile
 
-from users.management.commands.keyboards import get_webapp_inline_keyboard
+from users.management.commands.keyboards import get_webapp_inline_keyboard, get_about_us_inline_keyboard
 from users.models import User, TelegramUser, Region
 
 logger = logging.getLogger(__name__)
@@ -460,3 +461,27 @@ async def send_user_web_app(message: types.Message):
         reply_markup=get_webapp_inline_keyboard(),
         parse_mode=ParseMode.MARKDOWN,
     )
+
+
+@router.message(F.text == "❓ Ёрдам")
+async def help_message(message: types.Message):
+    await message.answer(
+        "Сизга бирор бир техник ёрдам керак бўлса +998994762708 рақамига мурожаат қилинг"
+        " ёки @abdumutalliev_b билан боғланинг")
+
+
+@router.message(F.text == "ℹ️ Биз ҳақимизда")
+async def about_us_message(message: types.Message):
+    btn = await get_about_us_inline_keyboard()
+    photo_path = "static/ifoda.jpg"
+    photo = FSInputFile(path=photo_path)
+    ifoda_text_full = ("🌱 *IFODA Agro Kimyo Himoya* MCHJ QK \n\n"
+                       "Республикамиздаги барча деҳқон ва фермер хўжаликлари, шахсий томорқа эгалари учун "
+                       "ишончли ҳамкор! 👨‍🌾👩‍🌾\n\n"
+                       "Биз нафақат маҳсулот етказиб берамиз, балки уларни қўллаш бўйича илмий ва "
+                       "амалий маслаҳатларни ҳам тақдим этамиз.\n\n🔹"
+                       " **Хизматларимиз:**\n• "
+                       "Сифатли кимёвий ҳимоя воситалари\n• Минерал ва органик ўғитлар\n• "
+                       "Агротехник консалтинг\n\n🌱 *ИФОДА - биргаликда етиштирамиз!*\n\n---\n"
+                       "📍 Мурожаат учун:\n☎️ +998 (78) 147 05 00\n📩 info@ifoda.uz")
+    await message.answer_photo(photo=photo, caption=ifoda_text_full, reply_markup=btn, parse_mode=ParseMode.MARKDOWN)

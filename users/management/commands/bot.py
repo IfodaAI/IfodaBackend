@@ -206,7 +206,7 @@ class Command(BaseCommand):
         bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
         await bot.set_my_commands([
             types.BotCommand(command="start", description=BUTTONS["start_command"]),
-            types.BotCommand(command="admin", description="Admin panel"),
+            # types.BotCommand(command="admin", description="Admin panel"),
         ])
 
         self.stdout.write(
