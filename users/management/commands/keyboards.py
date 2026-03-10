@@ -2,7 +2,16 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from django.conf import settings
 
-from users.management.commands import bot
+
+# Button matnlari (bot.py bilan mos)
+BUTTONS = {
+    "open_shop": "🏪 Ifoda Shop",
+    "online_agronom": "🌱 Онлайн Агроном",
+    "nearest_branches": "📍 Яқин атрофдаги филиалларимиз",
+    "help": "❓ Ёрдам",
+    "change_language": "🌐 Тилни танлаш",
+    "about_us": "ℹ️ Биз ҳақимизда",
+}
 
 
 def get_webapp_inline_keyboard() -> InlineKeyboardMarkup:
@@ -35,9 +44,9 @@ def get_main_keyboard() -> ReplyKeyboardMarkup:
     """Asosiy menyu tugmalarini qaytaradi"""
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text=bot.BUTTONS["online_agronom"])],
-            [KeyboardButton(text=bot.BUTTONS["nearest_branches"]), KeyboardButton(text=bot.BUTTONS["help"])],
-            [KeyboardButton(text=bot.BUTTONS["change_language"]), KeyboardButton(text=bot.BUTTONS["about_us"])],
+            [KeyboardButton(text=BUTTONS["online_agronom"])],
+            [KeyboardButton(text=BUTTONS["nearest_branches"]), KeyboardButton(text=BUTTONS["help"])],
+            [KeyboardButton(text=BUTTONS["about_us"])],
         ],
         resize_keyboard=True,
     )

@@ -10,14 +10,17 @@ from aiogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
 )
 from asgiref.sync import sync_to_async
 
 from django.conf import settings
 from aiogram.types import FSInputFile
 
-from users.management.commands.keyboards import get_webapp_inline_keyboard, get_about_us_inline_keyboard
-from users.models import User, TelegramUser, Region
+from users.management.commands.keyboards import get_webapp_inline_keyboard, get_about_us_inline_keyboard, get_main_keyboard
+from users.models import User, TelegramUser, Region, Branch
+from utils.utils import nearest_branches_func
 
 logger = logging.getLogger(__name__)
 
@@ -485,3 +488,64 @@ async def about_us_message(message: types.Message):
                        "Агротехник консалтинг\n\n🌱 *ИФОДА - биргаликда етиштирамиз!*\n\n---\n"
                        "📍 Мурожаат учун:\n☎️ +998 (78) 147 05 00\n📩 info@ifoda.uz")
     await message.answer_photo(photo=photo, caption=ifoda_text_full, reply_markup=btn, parse_mode=ParseMode.MARKDOWN)
+
+
+# ============== YAQIN FILIALLAR ==============
+@router.message(F.text == "📍 Яқин атрофдаги филиалларимиз")
+async def nearest_branches_handler(message: types.Message):
+    """Foydalanuvchidan lokatsiya so'rash"""
+    await message.answer(
+        "📍 Яқин атрофдаги филиалларни топиш учун жойлашувингизни юборинг:",
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard=[
+                [KeyboardButton(text="📍 Жойлашувимни юбориш", request_location=True)],
+                [KeyboardButton(text="⬅️ Орқага")],
+            ],
+            resize_keyboard=True,
+            one_time_keyboard=True,
+        ),
+    )
+
+
+@router.message(F.text == "⬅️ Орқага")
+async def back_to_main(message: types.Message):
+    """Asosiy menyuga qaytish"""
+    await message.answer(
+        "Асосий менюга қайтдингиз:",
+        reply_markup=get_main_keyboard(),
+    )
+
+
+@router.message(F.location)
+async def receive_location_handler(message: types.Message):
+    """Lokatsiya qabul qilib, eng yaqin filiallarni ko'rsatish"""
+    user_lat = message.location.latitude
+    user_lon = message.location.longitude
+
+    branches = await get_nearest_branches(user_lat, user_lon)
+
+    if not branches:
+        await message.answer(
+            "❌ Филиаллар топилмади.",
+            reply_markup=get_main_keyboard(),
+        )
+        return
+
+    text = "📍 <b>Сизга энг яқин филиаллар:</b>\n\n"
+    for i, branch in enumerate(branches, 1):
+        maps_link = f"https://www.google.com/maps?q={branch['latitude']},{branch['longitude']}"
+        text += (
+            f"{i}. <b>{branch['name']}</b>\n"
+            f"   📞 {branch['phone_number']}\n"
+            f"   📏 {branch['distance']} км\n"
+            f"   📍 <a href=\"{maps_link}\">Харитада кўриш</a>\n\n"
+        )
+
+    await message.answer(text, parse_mode=ParseMode.HTML, reply_markup=get_main_keyboard())
+
+
+@sync_to_async
+def get_nearest_branches(user_lat: float, user_lon: float) -> list[dict]:
+    """Bazadan eng yaqin 5 ta filialni qaytaradi"""
+    branch_data = Branch.objects.values("id", "name", "phone_number", "latitude", "longitude")
+    return nearest_branches_func(branch_data, user_lat, user_lon)

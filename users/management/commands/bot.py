@@ -17,7 +17,7 @@ from aiogram.types import (
 )
 from asgiref.sync import sync_to_async
 
-from users.management.commands.keyboards import get_main_keyboard
+from users.management.commands.keyboards import get_main_keyboard, BUTTONS
 from users.models import User, TelegramUser
 from users.management.commands.broadcast import router as broadcast_router
 
@@ -40,17 +40,11 @@ MESSAGES = {
     "invalid_phone": "Нотўғри формат. Илтимос, рақамни +998901234567 форматида киритинг",
 }
 
-BUTTONS = {
-    "open_shop": "🏪 Ifoda Shop",
-    "online_agronom": "🌱 Онлайн Агроном",
-    "nearest_branches": "📍 Яқин атрофдаги филиалларимиз",
-    "help": "❓ Ёрдам",
-    "change_language": "🌐 Тилни танлаш",
-    "about_us": "ℹ️ Биз ҳақимизда",
+BUTTONS.update({
     "share_contact": "Рақамни улашиш 📞",
     "manual_input": "Қўлда киритиш ✍️",
     "start_command": "Ботни ишга тушириш 🚀",
-}
+})
 
 PHONE_REGEX = re.compile(r"^\+998[0-9]{9}$")
 
