@@ -20,6 +20,21 @@ class UserSerializer(BaseModelSerializer):
             "state"
         )  # You cannot use __all__ because otherwise serializer will send user's password upon GET request as well.
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if (
+            request
+            and request.method == "GET"
+            and request.query_params.get("telegram_user") == "true"
+        ):
+            telegram_user = getattr(instance, "telegram_user", None)
+            if telegram_user:
+                data["telegram_user"] = TelegramUserSerializer(telegram_user).data
+            else:
+                data["telegram_user"] = None
+        return data
+
 class TelegramWebAppAuthSerializer(serializers.Serializer):
     init_data = serializers.CharField(required=True)
 
