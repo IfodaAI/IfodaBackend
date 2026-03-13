@@ -5,6 +5,41 @@ from rest_framework import serializers
 
 User = get_user_model()
 
+
+class RegionSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
+        model = Region
+        fields = ("id", "name", "small_package")
+
+
+class DistrictSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
+        model = District
+        fields = ("id", "name", "region", "small_package")
+
+
+class TelegramUserSerializer(BaseModelSerializer):
+    region = RegionSerializer(read_only=True)
+    district = DistrictSerializer(read_only=True)
+
+    class Meta(BaseModelSerializer.Meta):
+        model = TelegramUser
+        fields = (
+            "id",
+            "telegram_id",
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "photo_url",
+            "language_code",
+            "region",
+            "district",
+            "phone_number",
+            "created_date",
+        )
+
+
 class UserSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = User
@@ -35,27 +70,9 @@ class UserSerializer(BaseModelSerializer):
                 data["telegram_user"] = None
         return data
 
+
 class TelegramWebAppAuthSerializer(serializers.Serializer):
     init_data = serializers.CharField(required=True)
-
-
-class TelegramUserSerializer(BaseModelSerializer):
-    class Meta(BaseModelSerializer.Meta):
-        model = TelegramUser
-        fields = (
-            "id",
-            "telegram_id",
-            "user",
-            "username",
-            "first_name",
-            "last_name",
-            "photo_url",
-            "language_code",
-            "region",
-            "district",
-            "phone_number",
-            "created_date",
-        )
 
 
 class BranchSerializer(BaseModelSerializer):
@@ -71,17 +88,6 @@ class BranchSerializer(BaseModelSerializer):
             "phone_number",
         )
 
-
-class RegionSerializer(BaseModelSerializer):
-    class Meta(BaseModelSerializer.Meta):
-        model = Region
-        fields = ("id", "name", "small_package")
-
-
-class DistrictSerializer(BaseModelSerializer):
-    class Meta(BaseModelSerializer.Meta):
-        model = District
-        fields = ("id", "name", "region", "small_package")
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
